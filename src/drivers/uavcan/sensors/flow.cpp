@@ -67,6 +67,14 @@ void UavcanFlowBridge::flow_sub_cb(const uavcan::ReceivedDataStructure<com::hex:
 	device_id.devid_s.devtype = DRV_FLOW_DEVTYPE_UAVCAN;
 	device_id.devid_s.address = msg.getSrcNodeID().get() & 0xFF;
 
+	// Check source node ID and set appropriate topic
+	if (msg.getSrcNodeID().get() == 123) {
+		_orb_topic = ORB_ID(sensor_optical_flow_upward);
+
+	} else {
+		_orb_topic = ORB_ID(sensor_optical_flow);
+	}
+
 	flow.device_id = device_id.devid;
 
 	flow.pixel_flow[0] = msg.flow_integral[0];

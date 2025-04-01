@@ -99,19 +99,20 @@ struct Channel {
  */
 class UavcanSensorBridgeBase : public IUavcanSensorBridge, public device::Device
 {
-	const orb_id_t _orb_topic;
 	uavcan_bridge::Channel *const _channels;
 	bool _out_of_channels = false;
 
 protected:
+	orb_id_t _orb_topic;
 	static constexpr unsigned DEFAULT_MAX_CHANNELS = 4;
 	const unsigned _max_channels;
 
 	UavcanSensorBridgeBase(const char *name, const orb_id_t orb_topic_sensor,
 			       const unsigned max_channels = DEFAULT_MAX_CHANNELS) :
 		Device(name),
-		_orb_topic(orb_topic_sensor),
 		_channels(new uavcan_bridge::Channel[max_channels]),
+		_out_of_channels(false),
+		_orb_topic(orb_topic_sensor),
 		_max_channels(max_channels)
 	{
 		set_device_bus_type(DeviceBusType_UAVCAN);
