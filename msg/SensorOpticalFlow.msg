@@ -28,3 +28,5 @@ uint8 MODE_LOWLIGHT       = 2
 uint8 MODE_SUPER_LOWLIGHT = 3
 
 uint8 mode
+
+# TOPICS sensor_optical_flow sensor_optical_flow_upward

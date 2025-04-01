@@ -42,7 +42,7 @@ class PX4Rangefinder
 {
 public:
 	PX4Rangefinder(const uint32_t device_id,
-		       const uint8_t device_orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING);
+		       const uint8_t device_orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING, const uint8_t device_address = 0);
 	~PX4Rangefinder();
 
 	// Set the MAV_DISTANCE_SENSOR type (LASER, ULTRASOUND, INFRARED, RADAR)
@@ -68,4 +68,6 @@ public:
 
 private:
 	uORB::PublicationMultiData<distance_sensor_s> _distance_sensor_pub{ORB_ID(distance_sensor)};
+	uORB::PublicationMultiData<distance_sensor_s> _distance_sensor_upward_pub{ORB_ID(distance_sensor_upward)};
+	uint8_t _dev_address{0};
 };

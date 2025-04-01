@@ -45,3 +45,5 @@ uint8 mode
 uint8 MODE_UNKNOWN  = 0
 uint8 MODE_ENABLED  = 1
 uint8 MODE_DISABLED = 2
+
+# TOPICS distance_sensor distance_sensor_upward

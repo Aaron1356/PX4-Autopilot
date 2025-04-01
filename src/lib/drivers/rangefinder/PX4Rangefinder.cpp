@@ -35,12 +35,13 @@
 
 #include <lib/drivers/device/Device.hpp>
 
-PX4Rangefinder::PX4Rangefinder(const uint32_t device_id, const uint8_t device_orientation)
+PX4Rangefinder::PX4Rangefinder(const uint32_t device_id, const uint8_t device_orientation, const uint8_t device_address)
 {
 	set_device_id(device_id);
 	set_orientation(device_orientation);
 	set_rangefinder_type(distance_sensor_s::MAV_DISTANCE_SENSOR_LASER);
 	set_mode(distance_sensor_s::MODE_UNKNOWN);
+	_dev_address = device_address;
 }
 
 PX4Rangefinder::~PX4Rangefinder()
@@ -68,18 +69,36 @@ void PX4Rangefinder::set_orientation(const uint8_t device_orientation)
 
 void PX4Rangefinder::update(const hrt_abstime &timestamp_sample, const float distance, const int8_t quality)
 {
-	distance_sensor_s &report = _distance_sensor_pub.get();
+	if (_dev_address == 123) {
+		distance_sensor_s &report = _distance_sensor_upward_pub.get();
+		report.timestamp = timestamp_sample;
+		report.current_distance = distance;
+		report.signal_quality = quality;
 
-	report.timestamp = timestamp_sample;
-	report.current_distance = distance;
-	report.signal_quality = quality;
-
-	// if quality is unavailable (-1) set to 0 if distance is outside bounds
-	if (quality < 0) {
-		if ((distance < report.min_distance) || (distance > report.max_distance)) {
-			report.signal_quality = 0;
+		// if quality is unavailable (-1) set to 0 if distance is outside bounds
+		if (quality < 0) {
+			if ((distance < report.min_distance) || (distance > report.max_distance)) {
+				report.signal_quality = 0;
+			}
 		}
+
+		_distance_sensor_upward_pub.update();
+
+	} else {
+
+		distance_sensor_s &report = _distance_sensor_pub.get();
+		report.timestamp = timestamp_sample;
+		report.current_distance = distance;
+		report.signal_quality = quality;
+
+		// if quality is unavailable (-1) set to 0 if distance is outside bounds
+		if (quality < 0) {
+			if ((distance < report.min_distance) || (distance > report.max_distance)) {
+				report.signal_quality = 0;
+			}
+		}
+
+		_distance_sensor_pub.update();
 	}
 
-	_distance_sensor_pub.update();
 }
