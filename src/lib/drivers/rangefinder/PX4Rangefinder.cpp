@@ -37,34 +37,62 @@
 
 PX4Rangefinder::PX4Rangefinder(const uint32_t device_id, const uint8_t device_orientation, const uint8_t device_address)
 {
+	_dev_address = device_address;
 	set_device_id(device_id);
 	set_orientation(device_orientation);
 	set_rangefinder_type(distance_sensor_s::MAV_DISTANCE_SENSOR_LASER);
 	set_mode(distance_sensor_s::MODE_UNKNOWN);
-	_dev_address = device_address;
+
 }
 
 PX4Rangefinder::~PX4Rangefinder()
 {
-	_distance_sensor_pub.unadvertise();
+	if (_dev_address == 123) {
+		_distance_sensor_upward_pub.unadvertise();
+
+	} else {
+		_distance_sensor_pub.unadvertise();
+
+	}
+
 }
 
 void PX4Rangefinder::set_device_type(uint8_t device_type)
 {
 	// current DeviceStructure
 	union device::Device::DeviceId device_id;
-	device_id.devid = _distance_sensor_pub.get().device_id;
 
-	// update to new device type
-	device_id.devid_s.devtype = device_type;
+	if (_dev_address == 123) {
+		device_id.devid = _distance_sensor_pub.get().device_id;
 
-	// copy back to report
-	_distance_sensor_pub.get().device_id = device_id.devid;
+		// update to new device type
+		device_id.devid_s.devtype = device_type;
+
+		// copy back to report
+		_distance_sensor_upward_pub.get().device_id = device_id.devid;
+
+	} else {
+		device_id.devid = _distance_sensor_pub.get().device_id;
+
+		// update to new device type
+		device_id.devid_s.devtype = device_type;
+
+		// copy back to report
+		_distance_sensor_pub.get().device_id = device_id.devid;
+
+	}
 }
 
 void PX4Rangefinder::set_orientation(const uint8_t device_orientation)
 {
-	_distance_sensor_pub.get().orientation = device_orientation;
+	if (_dev_address == 123) {
+		_distance_sensor_upward_pub.get().orientation = device_orientation;
+
+	} else {
+		_distance_sensor_pub.get().orientation = device_orientation;
+
+	}
+
 }
 
 void PX4Rangefinder::update(const hrt_abstime &timestamp_sample, const float distance, const int8_t quality)
