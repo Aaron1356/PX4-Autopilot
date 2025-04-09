@@ -113,7 +113,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		vel_sensor(1) =   sample.range_m * flow_compensated_xy_rad(0) / sample.flow_dt;
 		vel_sensor(2) = 0.f;
 
-		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(180.f), 0.f, 0.f));
+		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(90.f), 0.f, 0.f));
 
 		const Vector3f vel_body = R_to_body * vel_sensor;
 

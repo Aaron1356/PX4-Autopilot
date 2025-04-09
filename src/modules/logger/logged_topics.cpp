@@ -183,11 +183,13 @@ void LoggedTopics::add_default_topics()
 
 	// debug
 	add_topic_multi("distance_sensor");
+	add_topic_multi("distance_sensor_upward");
 	add_topic_multi("estimator_optical_flow_vel");
 	add_topic_multi("estimator_optical_flow_upward_vel");
 	add_topic_multi("estimator_aid_src_optical_flow");
 	add_topic_multi("estimator_aid_src_optical_flow_upward");
 	add_topic_multi("sensor_optical_flow");
+	add_topic_multi("sensor_optical_flow_upward");
 	add_topic_multi("vehicle_optical_flow_vel");
 
 	// log all raw sensors at minimal rate (at least 1 Hz)
@@ -201,6 +203,7 @@ void LoggedTopics::add_default_topics()
 	add_optional_topic_multi("sensor_gyro", 1000, 4);
 	add_topic_multi("sensor_mag", 1000, 4);
 	add_topic_multi("sensor_optical_flow", 1000, 2);
+
 
 	add_topic_multi("vehicle_imu", 500, 4);
 	add_topic_multi("vehicle_imu_status", 1000, 4);
