@@ -47,11 +47,11 @@ PX4Rangefinder::PX4Rangefinder(const uint32_t device_id, const uint8_t device_or
 
 PX4Rangefinder::~PX4Rangefinder()
 {
-	if (_dev_address == 123) {
+	if (_dev_address == 124) {
 		_distance_sensor_upward_pub.unadvertise();
 
 	} else {
-		_distance_sensor_pub.unadvertise();
+		_distance_sensor_sideways_pub.unadvertise();
 
 	}
 
@@ -62,8 +62,8 @@ void PX4Rangefinder::set_device_type(uint8_t device_type)
 	// current DeviceStructure
 	union device::Device::DeviceId device_id;
 
-	if (_dev_address == 123) {
-		device_id.devid = _distance_sensor_pub.get().device_id;
+	if (_dev_address == 124) {
+		device_id.devid = _distance_sensor_upward_pub.get().device_id;
 
 		// update to new device type
 		device_id.devid_s.devtype = device_type;
@@ -72,24 +72,24 @@ void PX4Rangefinder::set_device_type(uint8_t device_type)
 		_distance_sensor_upward_pub.get().device_id = device_id.devid;
 
 	} else {
-		device_id.devid = _distance_sensor_pub.get().device_id;
+		device_id.devid = _distance_sensor_sideways_pub.get().device_id;
 
 		// update to new device type
 		device_id.devid_s.devtype = device_type;
 
 		// copy back to report
-		_distance_sensor_pub.get().device_id = device_id.devid;
+		_distance_sensor_sideways_pub.get().device_id = device_id.devid;
 
 	}
 }
 
 void PX4Rangefinder::set_orientation(const uint8_t device_orientation)
 {
-	if (_dev_address == 123) {
+	if (_dev_address == 124) {
 		_distance_sensor_upward_pub.get().orientation = device_orientation;
 
 	} else {
-		_distance_sensor_pub.get().orientation = device_orientation;
+		_distance_sensor_sideways_pub.get().orientation = device_orientation;
 
 	}
 
@@ -97,7 +97,7 @@ void PX4Rangefinder::set_orientation(const uint8_t device_orientation)
 
 void PX4Rangefinder::update(const hrt_abstime &timestamp_sample, const float distance, const int8_t quality)
 {
-	if (_dev_address == 123) {
+	if (_dev_address == 124) {
 		distance_sensor_s &report = _distance_sensor_upward_pub.get();
 		report.timestamp = timestamp_sample;
 		report.current_distance = distance;
@@ -114,7 +114,7 @@ void PX4Rangefinder::update(const hrt_abstime &timestamp_sample, const float dis
 
 	} else {
 
-		distance_sensor_s &report = _distance_sensor_pub.get();
+		distance_sensor_s &report = _distance_sensor_sideways_pub.get();
 		report.timestamp = timestamp_sample;
 		report.current_distance = distance;
 		report.signal_quality = quality;
@@ -126,7 +126,7 @@ void PX4Rangefinder::update(const hrt_abstime &timestamp_sample, const float dis
 			}
 		}
 
-		_distance_sensor_pub.update();
+		_distance_sensor_sideways_pub.update();
 	}
 
 }

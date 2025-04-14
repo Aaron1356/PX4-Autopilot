@@ -394,6 +394,10 @@ void Ekf::updateParameters()
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
 	_optical_flow_upward.updateParameters();
 #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
+	_optical_flow_sideways.updateParameters();
+#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 }
 
 template<typename T>

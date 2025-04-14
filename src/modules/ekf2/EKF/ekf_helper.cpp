@@ -302,6 +302,10 @@ void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 			vel_err_conservative = _optical_flow_upward.innovation().norm();
 #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
 
+		} else if (_control_status.flags.optical_flow_sideways) {
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
+			vel_err_conservative = _optical_flow_sideways.innovation().norm();
+#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 		}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
@@ -489,6 +493,14 @@ float Ekf::getHorizontalVelocityInnovationTestRatio() const
 	}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
+
+	if (isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.optical_flow_sideways)) {
+		test_ratio = math::max(test_ratio, fabsf(_optical_flow_sideways.test_ratio_filtered()));
+	}
+
+#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
@@ -859,6 +871,17 @@ void Ekf::updateHorizontalDeadReckoningstatus()
 	}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
+
+	// optical flow upward active
+	if (_control_status.flags.optical_flow_sideways
+	    && isRecent(_time_last_hor_vel_fuse, _params.no_aid_timeout_max)
+	   ) {
+		inertial_dead_reckoning = false;
+	}
+
+#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 
 #if defined(CONFIG_EKF2_AIRSPEED)
 

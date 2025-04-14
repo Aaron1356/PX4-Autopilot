@@ -33,15 +33,15 @@
 
 #include "ekf.h"
 
-#include "aid_sources/optical_flow_upward/optical_flow_upward.hpp"
+#include "aid_sources/optical_flow_sideways/optical_flow_sideways.hpp"
 
 #include "ekf_derivation/generated/compute_body_vel_innov_var_h.h"
 #include "ekf_derivation/generated/compute_body_vel_y_innov_var.h"
 #include "ekf_derivation/generated/compute_body_vel_z_innov_var.h"
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
 
-void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
+void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
 {
 
 #if defined(MODULE_NAME)
@@ -74,10 +74,10 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		// correct timestamp to midpoint of integration interval as the data is converted to rates
 		const int64_t time_us = sensor_optical_flow.timestamp_sample
 					- sensor_optical_flow.integration_timespan_us / 2
-					- static_cast<int64_t>(_param_ekf2_ofu_delay.get() * 1000);
+					- static_cast<int64_t>(_param_ekf2_ofs_delay.get() * 1000);
 
 		if (time_us > 0 && PX4_ISFINITE(range_m)) {
-			OpticalFlowUpwardSample sample{
+			OpticalFlowSidewaysSample sample{
 				.time_us = (uint64_t)time_us,
 				.flow_dt = flow_dt,
 				.flow_xy_rad = flow_xy_rad,
@@ -94,15 +94,15 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 
 #endif // MODULE_NAME
 
-	OpticalFlowUpwardSample sample;
+	OpticalFlowSidewaysSample sample;
 
 	if (_ringbuffer.pop_first_older_than(imu_delayed.time_us, &sample)) {
 
-		if (!_param_ekf2_ofu_ctrl.get()) {
+		if (!_param_ekf2_ofs_ctrl.get()) {
 			return;
 		}
 
-		estimator_aid_source3d_s &aid_src = _aid_src_optical_flow_upward;
+		estimator_aid_source3d_s &aid_src = _aid_src_optical_flow_sideways;
 
 		// compensate for body motion to give a LOS rate
 		const Vector2f flow_compensated_xy_rad = sample.flow_xy_rad - sample.gyro_integral.xy();
@@ -113,7 +113,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		vel_sensor(1) =   sample.range_m * flow_compensated_xy_rad(0) / sample.flow_dt;
 		vel_sensor(2) = 0.f;
 
-		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(180.f), 0.f, 0.f));
+		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(90.f), 0.f, 0.f));
 
 		const Vector3f vel_body = R_to_body * vel_sensor;
 
@@ -145,7 +145,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		// _velocity_offset_body = angular_velocity % position_offset_body;
 
 		//float quality_ratio = static_cast<float>(sample.flow_quality) / 255.f;
-		const float R = math::max(_param_ekf2_ofu_noise.get(), 0.01f);
+		const float R = math::max(_param_ekf2_ofs_noise.get(), 0.01f);
 
 		const Vector3f measurement{vel_body};
 		const Vector3f measurement_var{R, R, R};
@@ -191,7 +191,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 					bool reset = false;
 
 					if (fused || reset) {
-						ekf.enableControlStatusOpticalFlowUpward();
+						ekf.enableControlStatusOpticalFlowSideways();
 						// _reset_counters.lat_lon = sample.lat_lon_reset_counter;
 						_state = State::active;
 					}
@@ -229,18 +229,18 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 
 				if (isTimedOut(aid_src.time_last_fuse, imu_delayed.time_us, ekf._params.no_aid_timeout_max)) {
 
-					if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_upward)) {
+					if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_sideways)) {
 						// TODO
 						//ekf.resetAidSourceStatusZeroInnovation(aid_src);
 
 					} else {
-						ekf.disableControlStatusOpticalFlowUpward();
+						ekf.disableControlStatusOpticalFlowSideways();
 						_state = State::stopped;
 					}
 				}
 
 			} else {
-				ekf.disableControlStatusOpticalFlowUpward();
+				ekf.disableControlStatusOpticalFlowSideways();
 				_state = State::stopped;
 			}
 
@@ -252,7 +252,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 
 #if defined(MODULE_NAME)
 		aid_src.timestamp = hrt_absolute_time();
-		_estimator_aid_src_optical_flow_upward_pub.publish(aid_src);
+		_estimator_aid_src_optical_flow_sideways_pub.publish(aid_src);
 
 		// _estimator_optical_flow_upward_vel_pub.publish(aid_src);
 
@@ -302,10 +302,10 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 #endif // MODULE_NAME
 
 	} else if ((_state != State::stopped) && isTimedOut(_time_last_buffer_push, imu_delayed.time_us, (uint64_t)5e6)) {
-		ekf.disableControlStatusOpticalFlowUpward();
+		ekf.disableControlStatusOpticalFlowSideways();
 		_state = State::stopped;
-		ECL_WARN("Optical flow upward data stopped");
+		ECL_WARN("Optical flow sideways data stopped");
 	}
 }
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS

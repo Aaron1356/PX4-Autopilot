@@ -213,6 +213,11 @@ if(CONFIG_EKF2_OPTICAL_FLOW_UPWARD)
 	list(APPEND EKF_MODULE_PARAMS params_optical_flow_upward.yaml)
 endif()
 
+if(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)
+	list(APPEND EKF_SRCS EKF/aid_sources/optical_flow_sideways/optical_flow_sideways.cpp)
+	list(APPEND EKF_MODULE_PARAMS params_optical_flow_sideways.yaml)
+endif()
+
 if(CONFIG_EKF2_RANGE_FINDER)
 	list(APPEND EKF_SRCS
 		EKF/aid_sources/range_finder/range_finder_consistency_check.cpp

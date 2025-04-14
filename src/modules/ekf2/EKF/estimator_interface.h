@@ -301,6 +301,9 @@ public:
 	void enableControlStatusOpticalFlowUpward() { _control_status.flags.optical_flow_upward = true; }
 	void disableControlStatusOpticalFlowUpward() { _control_status.flags.optical_flow_upward = false; }
 
+	void enableControlStatusOpticalFlowSideways() { _control_status.flags.optical_flow_sideways = true; }
+	void disableControlStatusOpticalFlowSideways() { _control_status.flags.optical_flow_sideways = false; }
+
 	// get EKF internal fault status
 	const fault_status_u &fault_status() const { return _fault_status; }
 	const decltype(fault_status_u::flags) &fault_status_flags() const { return _fault_status.flags; }
