@@ -148,7 +148,10 @@ private:
 		(ParamBool<px4::params::EKF2_OFU_CTRL>) _param_ekf2_ofu_ctrl,
 		(ParamFloat<px4::params::EKF2_OFU_DELAY>) _param_ekf2_ofu_delay,
 		(ParamFloat<px4::params::EKF2_OFU_NOISE>) _param_ekf2_ofu_noise,
-		(ParamFloat<px4::params::EKF2_OFU_GATE>) _param_ekf2_ofu_gate
+		(ParamFloat<px4::params::EKF2_OFU_GATE>) _param_ekf2_ofu_gate,
+		(ParamFloat<px4::params::EKF2_OFU_ROLL>) _param_ekf2_ofu_roll,
+		(ParamFloat<px4::params::EKF2_OFU_PITCH>) _param_ekf2_ofu_pitch,
+		(ParamFloat<px4::params::EKF2_OFU_YAW>) _param_ekf2_ofu_yaw
 	)
 
 #endif // MODULE_NAME

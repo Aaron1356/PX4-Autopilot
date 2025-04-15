@@ -38,3 +38,30 @@ parameters:
       min: 1.0
       unit: SD
       decimal: 1
+    EKF2_OFU_ROLL:
+      description:
+        short: Set Roll angle of optical flow
+        long: Set the Roll angle of the optical Flow sensor to be used in the Optical Flow Upward object
+      type: float
+      default: 0.0
+      min: 0.0
+      units: degrees
+      decimal: 1
+    EKF2_OFU_PITCH:
+      description:
+        short: Set Pitch angle of optical flow
+        long: Set the Pitch angle of the optical Flow sensor to be used in the Optical Flow Upward object
+      type: float
+      default: 0.0
+      min: 0.0
+      units: degrees
+      decimal: 1
+    EKF2_OFU_YAW:
+      description:
+        short: Set Yaw angle of optical flow
+        long: Set the Yaw angle of the optical Flow sensor to be used in the Optical Flow Upward object
+      type: float
+      default: 0.0
+      min: 0.0
+      units: degrees
+      decimal: 1

@@ -111,9 +111,13 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		Vector3f vel_sensor;
 		vel_sensor(0) = - sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
 		vel_sensor(1) =   sample.range_m * flow_compensated_xy_rad(0) / sample.flow_dt;
-		vel_sensor(2) = 0.f;
+		vel_sensor(2) = 0.f;  // Sensor velocity in the Z direction
 
-		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(180.f), 0.f, 0.f));
+		float roll = _param_ekf2_ofu_roll.get();
+		float pitch = _param_ekf2_ofu_pitch.get();
+		float yaw = _param_ekf2_ofu_yaw.get();
+
+		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(roll), math::radians(pitch), math::radians(yaw)));
 
 		const Vector3f vel_body = R_to_body * vel_sensor;
 
@@ -208,10 +212,10 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 					for (uint8_t index = 0; index <= 2; index++) {
 						if (index == 1) {
 							sym::ComputeBodyVelYInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
-
 						} else if (index == 2) {
 							// skip z
-							// sym::ComputeBodyVelZInnovVar(state_vector, P, measurement_var(index), &aid_src.innovation_variance[index]);
+							// sym::ComputeBodyVelZInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
+							continue;
 						}
 
 						aid_src.innovation[index] = Vector3f(ekf._R_to_earth.transpose().row(index)) * ekf._state.vel - measurement(index);

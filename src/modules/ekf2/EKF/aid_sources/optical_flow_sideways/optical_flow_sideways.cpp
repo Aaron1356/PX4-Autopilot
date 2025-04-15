@@ -111,11 +111,17 @@ void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delay
 		Vector3f vel_sensor;
 		vel_sensor(0) = - sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
 		vel_sensor(1) =   sample.range_m * flow_compensated_xy_rad(0) / sample.flow_dt;
-		vel_sensor(2) = 0.f;
+		vel_sensor(2) = 0.f; // Optical Flow Sensor velocity in the Z direction
 
-		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(90.f), 0.f, 0.f));
+		// Collect Parameters
+		float roll = _param_ekf2_ofs_roll.get();
+		float pitch = _param_ekf2_ofs_pitch.get();
+		float yaw = _param_ekf2_ofs_yaw.get();
 
-		const Vector3f vel_body = R_to_body * vel_sensor;
+		// Rotation from Body Frame to Optical Flow Sensor
+		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(roll), math::radians(pitch), math::radians(yaw)));
+
+		const Vector3f vel_body = R_to_body * vel_sensor; // Cross Product NOT Dot Product
 
 		const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
 
@@ -155,6 +161,7 @@ void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delay
 		Ekf::VectorState H[3];
 		Vector3f innov_var;
 		Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
+		innov(1)= 0.f; // No Body fixed frame Y axis for side mounted
 		const auto state_vector = ekf._state.vector();
 		sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, measurement_var, &innov_var, &H[0], &H[1], &H[2]);
 
@@ -207,11 +214,13 @@ void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delay
 				if (!aid_src.innovation_rejected) {
 					for (uint8_t index = 0; index <= 2; index++) {
 						if (index == 1) {
-							sym::ComputeBodyVelYInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
+							//Skip y
+							// sym::ComputeBodyVelYInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
+							continue;
 
 						} else if (index == 2) {
 							// skip z
-							// sym::ComputeBodyVelZInnovVar(state_vector, P, measurement_var(index), &aid_src.innovation_variance[index]);
+							sym::ComputeBodyVelZInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
 						}
 
 						aid_src.innovation[index] = Vector3f(ekf._R_to_earth.transpose().row(index)) * ekf._state.vel - measurement(index);

@@ -148,7 +148,10 @@ private:
 		(ParamBool<px4::params::EKF2_OFS_CTRL>) _param_ekf2_ofs_ctrl,
 		(ParamFloat<px4::params::EKF2_OFS_DELAY>) _param_ekf2_ofs_delay,
 		(ParamFloat<px4::params::EKF2_OFS_NOISE>) _param_ekf2_ofs_noise,
-		(ParamFloat<px4::params::EKF2_OFS_GATE>) _param_ekf2_ofs_gate
+		(ParamFloat<px4::params::EKF2_OFS_GATE>) _param_ekf2_ofs_gate,
+		(ParamFloat<px4::params::EKF2_OFS_PITCH>) _param_ekf2_ofs_roll,
+		(ParamFloat<px4::params::EKF2_OFS_ROLL>) _param_ekf2_ofs_pitch,
+		(ParamFloat<px4::params::EKF2_OFS_YAW>) _param_ekf2_ofs_yaw
 	)
 
 #endif // MODULE_NAME
