@@ -162,7 +162,8 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		const auto state_vector = ekf._state.vector();
 		sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, measurement_var, &innov_var, &H[0], &H[1], &H[2]);
 
-		float innovation_gate = 1.f;
+		// Addin Gate Parameter
+		float innovation_gate = _param_ekf2_ofu_gate.get();
 
 		ekf.updateAidSourceStatus(aid_src,
 					  sample.time_us,        // sample timestamp
