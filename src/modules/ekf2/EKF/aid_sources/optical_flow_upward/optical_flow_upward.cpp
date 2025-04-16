@@ -119,9 +119,19 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 
 		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(roll), math::radians(pitch), math::radians(yaw)));
 
-		const Vector3f vel_body = R_to_body * vel_sensor;
+		const Vector3f vel_body_raw = R_to_body * vel_sensor;
 
 		const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
+
+		float pos_x = _param_ekf2_ofu_pos_x.get();
+		float pos_y = _param_ekf2_ofu_pos_y.get();
+		float pos_z = _param_ekf2_ofu_pos_z.get();
+		Vector3f flow_pos_body = Vector3f(pos_x, pos_y, pos_z);
+
+		const Vector3f angular_velocity = imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf._state.gyro_bias;
+		Vector3f position_offset_body = flow_pos_body - ekf._params.imu_pos_body;
+		const Vector3f velocity_offset_body = angular_velocity % position_offset_body;
+		const Vector3f vel_body = vel_body_raw - velocity_offset_body;
 
 		if (_flow_counter == 0) {
 			_flow_sensor_vel_lpf.reset(vel_sensor.xy());
@@ -144,9 +154,6 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			_flow_counter++;
 		}
 
-		// const Vector3f angular_velocity = imu_sample.delta_ang / imu_sample.delta_ang_dt - ekf._state.gyro_bias;
-		// Vector3f position_offset_body = ekf._params.ev_pos_body - ekf._params.imu_pos_body;
-		// _velocity_offset_body = angular_velocity % position_offset_body;
 
 		//float quality_ratio = static_cast<float>(sample.flow_quality) / 255.f;
 		const float R = math::max(_param_ekf2_ofu_noise.get(), 0.01f);
@@ -267,6 +274,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			flow_vel.timestamp_sample = sample.time_us;
 
 			vel_sensor.copyTo(flow_vel.vel_sensor);
+			vel_body_raw.copyTo(flow_vel.vel_body_raw);
 			vel_body.copyTo(flow_vel.vel_body);
 
 			const matrix::Vector3f vel_ned{ekf._R_to_earth * vel_body};

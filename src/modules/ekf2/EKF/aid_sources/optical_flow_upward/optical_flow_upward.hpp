@@ -151,7 +151,11 @@ private:
 		(ParamFloat<px4::params::EKF2_OFU_GATE>) _param_ekf2_ofu_gate,
 		(ParamFloat<px4::params::EKF2_OFU_ROLL>) _param_ekf2_ofu_roll,
 		(ParamFloat<px4::params::EKF2_OFU_PITCH>) _param_ekf2_ofu_pitch,
-		(ParamFloat<px4::params::EKF2_OFU_YAW>) _param_ekf2_ofu_yaw
+		(ParamFloat<px4::params::EKF2_OFU_YAW>) _param_ekf2_ofu_yaw,
+		(ParamFloat<px4::params::EKF2_OFU_POS_X>) _param_ekf2_ofu_pos_x,
+		(ParamFloat<px4::params::EKF2_OFU_POS_Y>) _param_ekf2_ofu_pos_y,
+		(ParamFloat<px4::params::EKF2_OFU_POS_Z>) _param_ekf2_ofu_pos_z
+
 	)
 
 #endif // MODULE_NAME

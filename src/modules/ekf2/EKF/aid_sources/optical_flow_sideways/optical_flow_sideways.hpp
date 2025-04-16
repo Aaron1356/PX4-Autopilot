@@ -151,7 +151,10 @@ private:
 		(ParamFloat<px4::params::EKF2_OFS_GATE>) _param_ekf2_ofs_gate,
 		(ParamFloat<px4::params::EKF2_OFS_PITCH>) _param_ekf2_ofs_pitch,
 		(ParamFloat<px4::params::EKF2_OFS_ROLL>) _param_ekf2_ofs_roll,
-		(ParamFloat<px4::params::EKF2_OFS_YAW>) _param_ekf2_ofs_yaw
+		(ParamFloat<px4::params::EKF2_OFS_YAW>) _param_ekf2_ofs_yaw,
+		(ParamFloat<px4::params::EKF2_OFS_POS_X>) _param_ekf2_ofs_pos_x,
+		(ParamFloat<px4::params::EKF2_OFS_POS_Y>) _param_ekf2_ofs_pos_y,
+		(ParamFloat<px4::params::EKF2_OFS_POS_Z>) _param_ekf2_ofs_pos_z
 	)
 
 #endif // MODULE_NAME
