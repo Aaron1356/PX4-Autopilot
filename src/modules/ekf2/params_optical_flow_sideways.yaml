@@ -71,24 +71,24 @@ parameters:
           long: Set the X offset of the optical Flow sensor to be used in the Optical Flow SidewaysUpward object
       type: float
       default: 0.0
-      min: 0.0
+      min: -1000.0
       units: meters
-      decimal: 1
+      decimal: 5
     EKF2_OFS_POS_Y:
       description:
           short: Position Offset Y
           long: Set the Y offset of the optical Flow sensor to be used in the Optical Flow Sideways object
       type: float
       default: 0.0
-      min: 0.0
+      min: -1000.0
       units: meters
-      decimal: 1
+      decimal: 5
     EKF2_OFS_POS_Z:
       description:
         short: Position Offset Z
         long: Set the Z offset of the optical Flow sensor to be used in the Optical Flow Sideways object
       type: float
       default: 0.0
-      min: 0.0
+      min: -1000.0
       units: meters
-      decimal: 1
+      decimal: 5
