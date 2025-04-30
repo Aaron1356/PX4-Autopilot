@@ -54,7 +54,7 @@
 # include <uORB/PublicationMulti.hpp>
 # include <uORB/Subscription.hpp>
 # include <uORB/topics/distance_sensor.h>
-# include <uORB/topics/estimator_aid_source3d.h>
+# include <uORB/topics/estimator_aid_source2d.h>
 # include <uORB/topics/sensor_optical_flow.h>
 # include <uORB/topics/vehicle_optical_flow_vel.h>
 #endif // MODULE_NAME
@@ -98,7 +98,7 @@ private:
 		uint8_t     flow_quality{};   ///< quality indicator between 0 and 255
 	};
 
-	estimator_aid_source3d_s _aid_src_optical_flow_upward{};
+	estimator_aid_source2d_s _aid_src_optical_flow_upward{};
 	RingBuffer<OpticalFlowUpwardSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
 	uint64_t _time_last_buffer_push{0};
 
@@ -136,7 +136,7 @@ private:
 	};
 	reset_counters_s _reset_counters{};
 
-	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
+	uORB::PublicationMulti<estimator_aid_source2d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_vel_pub{ORB_ID(estimator_optical_flow_upward_vel)};
 
 	static constexpr uint8_t kFlowInstance = 0;

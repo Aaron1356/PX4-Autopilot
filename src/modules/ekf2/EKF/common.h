@@ -57,6 +57,7 @@ using matrix::Matrix3f;
 using matrix::Quatf;
 using matrix::Vector2f;
 using matrix::Vector3f;
+using matrix::Vector4f;
 using matrix::wrap_pi;
 
 using math::Utilities::getEulerYaw;

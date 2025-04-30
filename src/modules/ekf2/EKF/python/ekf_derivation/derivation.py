@@ -413,6 +413,50 @@ def compute_body_vel_z_innov_var(
 
     return (innov_var)
 
+
+
+def compute_sensor_vel_innov_var_h(
+        state: VState,
+        P: MTangent,
+        meas: sf.V2,
+        R_to_sensor: sf.V4,
+        vel_offset: sf.V3,
+        R: sf.V2,
+) -> (sf.V2, sf.V2, sf.V2, VTangent, VTangent, VTangent):
+
+    state = vstate_to_state(state)
+
+    R_to_sensor_rot3 = sf.Rot3(sf.Quaternion(xyz=sf.V3(R_to_sensor[1], R_to_sensor[2], R_to_sensor[3]), w=R_to_sensor[0]))
+
+    meas_pred_3d = R_to_sensor_rot3 * predict_vel_body(state) + vel_offset
+    meas_pred = sf.V2(meas_pred_3d[0], meas_pred_3d[1])
+
+    Hx = jacobian_chain_rule(meas_pred[0], state)
+    Hy = jacobian_chain_rule(meas_pred[1], state)
+
+    innov = meas_pred - meas
+
+    innov_var = sf.V2((Hx * P * Hx.T + R[0])[0,0],
+                        (Hy * P * Hy.T + R[1])[0,0])
+
+    return (meas_pred, innov, innov_var, Hx.T, Hy.T)
+
+def compute_sensor_vel_y_innov_var(
+        state: VState,
+        P: MTangent,
+        R_to_sensor: sf.V4,
+        R: sf.Scalar
+) -> (sf.Scalar):
+    state = vstate_to_state(state)
+
+    R_to_sensor_rot3 = sf.Rot3(sf.Quaternion(xyz=sf.V3(R_to_sensor[1], R_to_sensor[2], R_to_sensor[3]), w=R_to_sensor[0]))
+
+    meas_pred = R_to_sensor_rot3 * predict_vel_body(state)
+    Hy = jacobian_chain_rule(meas_pred[1], state)
+    innov_var = (Hy * P * Hy.T + R)[0,0]
+
+    return (innov_var)
+
 def predict_mag_body(state) -> sf.V3:
     mag_field_earth = state["mag_I"]
     mag_bias_body = state["mag_B"]
@@ -752,5 +796,8 @@ generate_px4_function(compute_gravity_z_innov_var_and_h, output_names=["innov_va
 generate_px4_function(compute_body_vel_innov_var_h, output_names=["innov_var", "Hx", "Hy", "Hz"])
 generate_px4_function(compute_body_vel_y_innov_var, output_names=["innov_var"])
 generate_px4_function(compute_body_vel_z_innov_var, output_names=["innov_var"])
+
+generate_px4_function(compute_sensor_vel_innov_var_h, output_names=["meas_pred", "innov", "innov_var", "Hx", "Hy"])
+generate_px4_function(compute_sensor_vel_y_innov_var, output_names=["innov_var"])
 
 generate_px4_state(State, tangent_idx)

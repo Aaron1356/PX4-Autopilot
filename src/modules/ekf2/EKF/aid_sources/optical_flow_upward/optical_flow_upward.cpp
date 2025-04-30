@@ -35,9 +35,8 @@
 
 #include "aid_sources/optical_flow_upward/optical_flow_upward.hpp"
 
-#include "ekf_derivation/generated/compute_body_vel_innov_var_h.h"
-#include "ekf_derivation/generated/compute_body_vel_y_innov_var.h"
-#include "ekf_derivation/generated/compute_body_vel_z_innov_var.h"
+#include "ekf_derivation/generated/compute_sensor_vel_innov_var_h.h"
+#include "ekf_derivation/generated/compute_sensor_vel_y_innov_var.h"
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
 
@@ -102,7 +101,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			return;
 		}
 
-		estimator_aid_source3d_s &aid_src = _aid_src_optical_flow_upward;
+		estimator_aid_source2d_s &aid_src = _aid_src_optical_flow_upward;
 
 		// compensate for body motion to give a LOS rate
 		const Vector2f flow_compensated_xy_rad = sample.flow_xy_rad - sample.gyro_integral.xy();
@@ -119,10 +118,6 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 
 		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(roll), math::radians(pitch), math::radians(yaw)));
 
-		const Vector3f vel_body_raw = R_to_body * vel_sensor;
-
-		const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
-
 		float pos_x = _param_ekf2_ofu_pos_x.get();
 		float pos_y = _param_ekf2_ofu_pos_y.get();
 		float pos_z = _param_ekf2_ofu_pos_z.get();
@@ -130,12 +125,22 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 
 		const Vector3f angular_velocity = imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf._state.gyro_bias;
 		Vector3f position_offset_body = flow_pos_body - ekf._params.imu_pos_body;
-		const Vector3f velocity_offset_body = angular_velocity % position_offset_body;
-		const Vector3f vel_body = vel_body_raw - velocity_offset_body;
+		const Vector3f velocity_offset = angular_velocity % position_offset_body;
+
+		const Vector3f vel_body_raw = R_to_body * vel_sensor;
+		const Vector3f vel_body = vel_body_raw - velocity_offset;
+
+		const Quatf R_to_sensor(R_to_body.transpose());
+
+		const Vector3f vel_body_predicted = ekf._R_to_earth.transpose() * ekf._state.vel;
+		const Vector3f vel_sensor_predicted = R_to_body.transpose() * vel_body_predicted + velocity_offset;
+
+		const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
+
 
 		if (_flow_counter == 0) {
 			_flow_sensor_vel_lpf.reset(vel_sensor.xy());
-			_flow_body_vel_lpf.reset(vel_body.xy());
+			//_flow_body_vel_lpf.reset(vel_body.xy());
 
 			_flow_mean.reset();
 			_flow_sensor_vel_mean.reset();
@@ -145,7 +150,7 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		} else {
 
 			_flow_sensor_vel_lpf.update(vel_sensor.xy());
-			_flow_body_vel_lpf.update(vel_body.xy());
+			//_flow_body_vel_lpf.update(vel_body.xy());
 
 
 			_flow_mean.update(sample.flow_xy_rad);
@@ -158,23 +163,30 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 		//float quality_ratio = static_cast<float>(sample.flow_quality) / 255.f;
 		const float R = math::max(_param_ekf2_ofu_noise.get(), 0.01f);
 
-		const Vector3f measurement{vel_body};
-		const Vector3f measurement_var{R, R, R};
+		const Vector2f measurement{vel_sensor.xy()};
+		const Vector2f measurement_var{R, R};
 
 		// vel NE
 		// Vector3f vel_body;
-		Ekf::VectorState H[3];
-		Vector3f innov_var;
-		Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
+		const Vector2f meas = vel_sensor.xy();
+		Vector2f meas_pred{};
+		Ekf::VectorState H[2] {};
+		Vector2f innov{};
+		Vector2f innov_var{};
+		//Vector3f innov_3d = ekf._R_to_earth.transpose() * ekf._state.vel - vel_sensor;
 		const auto state_vector = ekf._state.vector();
-		sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, measurement_var, &innov_var, &H[0], &H[1], &H[2]);
 
-		// Addin Gate Parameter
+		const Vector4f R_to_sensor_v4(R_to_sensor);
+		sym::ComputeSensorVelInnovVarH(state_vector, ekf.P,
+					       meas, R_to_sensor_v4, velocity_offset, measurement_var,
+					       &meas_pred, &innov, &innov_var, &H[0], &H[1]);
+
+
 		float innovation_gate = _param_ekf2_ofu_gate.get();
 
 		ekf.updateAidSourceStatus(aid_src,
 					  sample.time_us,        // sample timestamp
-					  vel_body,              // observation
+					  meas,                  // observation
 					  measurement_var,       // observation variance
 					  innov,                 // innovation
 					  innov_var,             // innovation variance
@@ -217,16 +229,13 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			if (continuing_conditions) {
 
 				if (!aid_src.innovation_rejected) {
-					for (uint8_t index = 0; index <= 2; index++) {
+					for (uint8_t index = 0; index <= 1; index++) {
 						if (index == 1) {
-							sym::ComputeBodyVelYInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
-						} else if (index == 2) {
-							// skip z
-							// sym::ComputeBodyVelZInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
-							continue;
+							sym::ComputeSensorVelYInnovVar(state_vector, ekf.P, R_to_sensor_v4, measurement_var(index),
+										       &aid_src.innovation_variance[index]);
 						}
 
-						aid_src.innovation[index] = Vector3f(ekf._R_to_earth.transpose().row(index)) * ekf._state.vel - measurement(index);
+						//aid_src.innovation[index] = Vector3f(ekf._R_to_earth.transpose().row(index)) * ekf._state.vel - measurement(index);
 
 						Ekf::VectorState Kfusion = ekf.P * H[index] / aid_src.innovation_variance[index];
 						ekf.measurementUpdate(Kfusion, H[index], aid_src.observation_variance[index], aid_src.innovation[index]);
@@ -302,12 +311,17 @@ void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed
 			//ekf.getFlowGyroBias().copyTo(flow_vel.gyro_bias);
 			ref_body_rate.copyTo(flow_vel.ref_gyro);
 
+
+			vel_sensor_predicted.copyTo(flow_vel.vel_sensor_predicted);
+
+			velocity_offset.copyTo(flow_vel.vel_sensor_offset);
+
 			flow_vel.timestamp = hrt_absolute_time();
 
 			_estimator_optical_flow_vel_pub.publish(flow_vel);
 		}
 
-		_vel_ne_innovation = innov.xy();
+		//_vel_ne_innovation = innov.xy();
 		_vel_ne_test_ratio(0) = aid_src.test_ratio[0];
 		_vel_ne_test_ratio(1) = aid_src.test_ratio[1];
 

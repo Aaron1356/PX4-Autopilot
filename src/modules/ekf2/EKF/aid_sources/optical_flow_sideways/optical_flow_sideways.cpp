@@ -35,9 +35,8 @@
 
 #include "aid_sources/optical_flow_sideways/optical_flow_sideways.hpp"
 
-#include "ekf_derivation/generated/compute_body_vel_innov_var_h.h"
-#include "ekf_derivation/generated/compute_body_vel_y_innov_var.h"
-#include "ekf_derivation/generated/compute_body_vel_z_innov_var.h"
+#include "ekf_derivation/generated/compute_sensor_vel_innov_var_h.h"
+#include "ekf_derivation/generated/compute_sensor_vel_y_innov_var.h"
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
 
@@ -121,7 +120,8 @@ void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delay
 		// Rotation from Body Frame to Optical Flow Sensor
 		const matrix::Dcmf R_to_body(matrix::Eulerf(math::radians(roll), math::radians(pitch), math::radians(yaw)));
 
-		const Vector3f vel_body_raw = R_to_body * vel_sensor; // Cross Product NOT Dot Product
+		const Vector3f vel_body_raw = R_to_body * vel_sensor;
+		const Quatf R_to_sensor(R_to_body.transpose());
 
 		const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
 
@@ -157,7 +157,6 @@ void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delay
 		}
 
 
-
 		//float quality_ratio = static_cast<float>(sample.flow_quality) / 255.f;
 		const float R = math::max(_param_ekf2_ofs_noise.get(), 0.01f);
 
@@ -166,12 +165,17 @@ void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delay
 
 		// vel NE
 		// Vector3f vel_body;
-		Ekf::VectorState H[3];
-		Vector3f innov_var;
+		Ekf::VectorState H[2];
+		Vector2f innov_var_2d;
 		Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
-		innov(1)= 0.f; // No Body fixed frame Y axis for side mounted
 		const auto state_vector = ekf._state.vector();
-		sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, measurement_var, &innov_var, &H[0], &H[1], &H[2]);
+
+		const Vector4f R_to_sensor_v4(R_to_sensor);
+		// sym::ComputeSensorVelInnovVarH(state_vector, ekf.P, R_to_sensor_v4, Vector2f(measurement_var),
+		// 			       &innov_var_2d, &H[0], &H[1]);
+
+		Vector3f innov_var{};
+		innov_var.xy() = innov_var_2d;
 
 		float innovation_gate = _param_ekf2_ofs_gate.get();
 
@@ -222,13 +226,8 @@ void OpticalFlowSideways::update(Ekf &ekf, const estimator::imuSample &imu_delay
 				if (!aid_src.innovation_rejected) {
 					for (uint8_t index = 0; index <= 2; index++) {
 						if (index == 1) {
-							//Skip y
-							// sym::ComputeBodyVelYInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
-							continue;
-
-						} else if (index == 2) {
-							// skip z
-							sym::ComputeBodyVelZInnovVar(state_vector, ekf.P, measurement_var(index), &aid_src.innovation_variance[index]);
+							sym::ComputeSensorVelYInnovVar(state_vector, ekf.P, R_to_sensor_v4, measurement_var(index),
+										       &aid_src.innovation_variance[index]);
 						}
 
 						aid_src.innovation[index] = Vector3f(ekf._R_to_earth.transpose().row(index)) * ekf._state.vel - measurement(index);
