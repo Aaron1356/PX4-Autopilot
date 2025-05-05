@@ -92,3 +92,14 @@ parameters:
       min: -1000.0
       units: meters
       decimal: 5
+    EKF2_OFS_MODE:
+      description:
+        short: Direction the Optical Flow Sensor is facing
+        long: |
+          Sets the Optical Flow Sensor's Direction for orthogonal Directions for non orthogonal Directions use custom.
+      type: enum
+      values:
+        0: Forward
+        1: Sideway
+        2: Upward
+        4: Custom
