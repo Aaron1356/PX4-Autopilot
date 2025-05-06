@@ -298,11 +298,10 @@ public:
 	void enableControlStatusAuxGpos() { _control_status.flags.aux_gpos = true; }
 	void disableControlStatusAuxGpos() { _control_status.flags.aux_gpos = false; }
 
-	void enableControlStatusOpticalFlowUpward() { _control_status.flags.optical_flow_upward = true; }
-	void disableControlStatusOpticalFlowUpward() { _control_status.flags.optical_flow_upward = false; }
+	void enableControlStatusOpticalFlowVel() { _control_status.flags.optical_flow_vel_0 = true; }
+	void disableControlStatusOpticalFlowVel() { _control_status.flags.optical_flow_vel_0 = false; }
 
-	void enableControlStatusOpticalFlowSideways() { _control_status.flags.optical_flow_sideways = true; }
-	void disableControlStatusOpticalFlowSideways() { _control_status.flags.optical_flow_sideways = false; }
+	// optical flow N
 
 	// get EKF internal fault status
 	const fault_status_u &fault_status() const { return _fault_status; }

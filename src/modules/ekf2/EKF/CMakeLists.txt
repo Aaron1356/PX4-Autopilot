@@ -121,12 +121,8 @@ if(CONFIG_EKF2_OPTICAL_FLOW)
 	)
 endif()
 
-if(CONFIG_EKF2_OPTICAL_FLOW_UPWARD)
-	list(APPEND EKF_SRCS aid_sources/optical_flow_upward/optical_flow_upward.cpp)
-endif()
-
-if(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)
-	list(APPEND EKF_SRCS aid_sources/optical_flow_sideways/optical_flow_sideways.cpp)
+if(CONFIG_EKF2_OPTICAL_FLOW_VEL)
+	list(APPEND EKF_SRCS aid_sources/optical_flow_vel/optical_flow_vel.cpp)
 endif()
 
 if(CONFIG_EKF2_RANGE_FINDER)

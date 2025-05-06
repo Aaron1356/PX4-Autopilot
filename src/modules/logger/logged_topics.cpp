@@ -176,7 +176,6 @@ void LoggedTopics::add_default_topics()
 	add_optional_topic_multi("estimator_event_flags", 10);
 	add_optional_topic_multi("estimator_optical_flow_vel", 200);
 	add_optional_topic_multi("estimator_optical_flow_upward_vel", 200);
-	add_optional_topic_multi("estimator_optical_flow_sideways_vel", 200);
 	add_optional_topic_multi("estimator_sensor_bias", 1000);
 	add_optional_topic_multi("estimator_status", 200);
 	add_optional_topic_multi("estimator_status_flags", 10);
@@ -188,10 +187,8 @@ void LoggedTopics::add_default_topics()
 	add_topic_multi("distance_sensor_sideways");
 	add_topic_multi("estimator_optical_flow_vel");
 	add_topic_multi("estimator_optical_flow_upward_vel");
-	add_topic_multi("estimator_optical_flow_sideways_vel");
 	add_topic_multi("estimator_aid_src_optical_flow");
 	add_topic_multi("estimator_aid_src_optical_flow_upward");
-	add_topic_multi("estimator_aid_src_optical_flow_sideways");
 	add_topic_multi("sensor_optical_flow");
 	add_topic_multi("sensor_optical_flow_upward");
 	add_topic_multi("sensor_optical_flow_sideways");

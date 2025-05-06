@@ -1,17 +1,40 @@
+__max_num_flow_vel_instances: &max_num_flow_vel_instances 4
+
 module_name: ekf2
 parameters:
 - group: EKF2
   definitions:
-    EKF2_OFU_CTRL:
+    EKF2_OFV${i}_CTRL:
       description:
-        short: Optical flow upward (OFU) sensor aiding
+        short: Optical flow velocity (OFV${i}) sensor aiding
       type: boolean
       default: 0
       min: 0
       max: 3
-    EKF2_OFU_DELAY:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+
+    EKF2_OFV${i}_FLW_ID:
+        description:
+            short: Optical flow velocity ${i} flow sensor device ID
+        category: System
+        type: int32
+        default: 0
+        num_instances: *max_num_flow_vel_instances
+        instance_start: 0
+
+    EKF2_OFV${i}_RNG_ID:
+        description:
+            short: Optical flow velocity ${i} range sensor device ID
+        category: System
+        type: int32
+        default: 0
+        num_instances: *max_num_flow_vel_instances
+        instance_start: 0
+
+    EKF2_OFV${i}_DELAY:
       description:
-        short: Optical flow upward estimator delay relative to IMU measurements
+        short: Optical flow velocity estimator delay relative to IMU measurements
       type: float
       default: 10
       min: 0
@@ -19,7 +42,9 @@ parameters:
       unit: ms
       reboot_required: true
       decimal: 1
-    EKF2_OFU_NOISE:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_NOISE:
       description:
         short: Measurement noise for aux global position measurements
         long:  Used to lower bound or replace the uncertainty included in the message
@@ -28,7 +53,9 @@ parameters:
       min: 0.01
       unit: m/s
       decimal: 2
-    EKF2_OFU_GATE:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_GATE:
       description:
         short: Gate size for aux global position fusion
         long: Sets the number of standard deviations used by the innovation consistency
@@ -38,57 +65,77 @@ parameters:
       min: 1.0
       unit: SD
       decimal: 1
-    EKF2_OFU_ROLL:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_ROLL:
       description:
         short: Set Roll angle of optical flow
         long: Set the Roll angle of the optical Flow sensor to be used in the Optical Flow Upward object
       type: float
       default: 0.0
-      min: 0.0
+      min: -180.0
+      max:  180.0
       units: degrees
       decimal: 1
-    EKF2_OFU_PITCH:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_PITCH:
       description:
         short: Set Pitch angle of optical flow
         long: Set the Pitch angle of the optical Flow sensor to be used in the Optical Flow Upward object
       type: float
       default: 0.0
-      min: 0.0
+      min: -180.0
+      max:  180.0
       units: degrees
       decimal: 1
-    EKF2_OFU_YAW:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_YAW:
       description:
         short: Set Yaw angle of optical flow
         long: Set the Yaw angle of the optical Flow sensor to be used in the Optical Flow Upward object
       type: float
       default: 0.0
-      min: 0.0
+      min: -180.0
+      max:  180.0
       units: degrees
       decimal: 1
-    EKF2_OFU_POS_X:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_POS_X:
       description:
           short: Position Offset X
           long: Set the X offset of the optical Flow sensor to be used in the Optical Flow Upward object
       type: float
       default: 0.0
       min: -1000.0
+      max:  1000.0
       units: meters
       decimal: 5
-    EKF2_OFU_POS_Y:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_POS_Y:
       description:
           short: Position Offset Y
           long: Set the Y offset of the optical Flow sensor to be used in the Optical Flow Upward object
       type: float
       default: 0.0
       min: -1000.0
+      max:  1000.0
       units: meters
       decimal: 5
-    EKF2_OFU_POS_Z:
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0
+    EKF2_OFV${i}_POS_Z:
       description:
         short: Position Offset Z
         long: Set the Z offset of the optical Flow sensor to be used in the Optical Flow Upward object
       type: float
       default: 0.0
       min: -1000.0
+      max:  1000.0
       units: meters
       decimal: 5
+      num_instances: *max_num_flow_vel_instances
+      instance_start: 0

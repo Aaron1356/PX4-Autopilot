@@ -31,8 +31,8 @@
  *
  ****************************************************************************/
 
-#ifndef EKF_OPTICAL_FLOW_UPWARD_HPP
-#define EKF_OPTICAL_FLOW_UPWARD_HPP
+#ifndef EKF_OPTICAL_FLOW_VEL_HPP
+#define EKF_OPTICAL_FLOW_VEL_HPP
 
 // interface?
 //  - ModuleParams
@@ -47,7 +47,7 @@
 
 #include <lib/mathlib/math/WelfordMeanVector.hpp>
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VEL) && defined(MODULE_NAME)
 
 #if defined(MODULE_NAME)
 # include <px4_platform_common/module_params.h>
@@ -61,22 +61,19 @@
 
 class Ekf;
 
-class OpticalFlowUpward : public ModuleParams
+class OpticalFlowVel : public ModuleParams
 {
 public:
-	OpticalFlowUpward() : ModuleParams(nullptr)
+	OpticalFlowVel() : ModuleParams(nullptr)
 	{
-		_estimator_aid_src_optical_flow_upward_pub.advertise();
+		_estimator_aid_src_optical_flow_vel_pub.advertise();
 	}
 
-	~OpticalFlowUpward() = default;
+	~OpticalFlowVel() = default;
 
 	void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
 
-	void updateParameters()
-	{
-		updateParams();
-	}
+	void updateParameters();
 
 	const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
 	const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
@@ -89,7 +86,7 @@ private:
 		return (last_sensor_timestamp == 0) || (last_sensor_timestamp + timeout_period < time_delayed_us);
 	}
 
-	struct OpticalFlowUpwardSample {
+	struct OpticalFlowVelSample {
 		uint64_t    time_us{};   ///< timestamp of the integration period midpoint (uSec)
 		float       flow_dt{};
 		Vector2f    flow_xy_rad{}; ///< measured angular rate of the image about the X and Y body axes (rad/s), RH rotation is positive
@@ -98,8 +95,8 @@ private:
 		uint8_t     flow_quality{};   ///< quality indicator between 0 and 255
 	};
 
-	estimator_aid_source2d_s _aid_src_optical_flow_upward{};
-	RingBuffer<OpticalFlowUpwardSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
+	estimator_aid_source2d_s _aid_src_optical_flow_vel{};
+	RingBuffer<OpticalFlowVelSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
 	uint64_t _time_last_buffer_push{0};
 
 	enum class State {
@@ -136,31 +133,33 @@ private:
 	};
 	reset_counters_s _reset_counters{};
 
-	uORB::PublicationMulti<estimator_aid_source2d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
-	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_vel_pub{ORB_ID(estimator_optical_flow_upward_vel)};
+	uORB::PublicationMulti<estimator_aid_source2d_s> _estimator_aid_src_optical_flow_vel_pub{ORB_ID(estimator_aid_src_optical_flow_vel)};
+	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_vel_pub{ORB_ID(estimator_optical_flow_vel)};
 
 	static constexpr uint8_t kFlowInstance = 0;
 
-	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow_upward), kFlowInstance};
+	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow), kFlowInstance};
 	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor_upward), kFlowInstance};
 
 	DEFINE_PARAMETERS(
-		(ParamBool<px4::params::EKF2_OFU_CTRL>) _param_ekf2_ofu_ctrl,
-		(ParamFloat<px4::params::EKF2_OFU_DELAY>) _param_ekf2_ofu_delay,
-		(ParamFloat<px4::params::EKF2_OFU_NOISE>) _param_ekf2_ofu_noise,
-		(ParamFloat<px4::params::EKF2_OFU_GATE>) _param_ekf2_ofu_gate,
-		(ParamFloat<px4::params::EKF2_OFU_ROLL>) _param_ekf2_ofu_roll,
-		(ParamFloat<px4::params::EKF2_OFU_PITCH>) _param_ekf2_ofu_pitch,
-		(ParamFloat<px4::params::EKF2_OFU_YAW>) _param_ekf2_ofu_yaw,
-		(ParamFloat<px4::params::EKF2_OFU_POS_X>) _param_ekf2_ofu_pos_x,
-		(ParamFloat<px4::params::EKF2_OFU_POS_Y>) _param_ekf2_ofu_pos_y,
-		(ParamFloat<px4::params::EKF2_OFU_POS_Z>) _param_ekf2_ofu_pos_z
+		(ParamBool<px4::params::EKF2_OFV0_CTRL>) _param_ekf2_ofv0_ctrl,
+		(ParamInt<px4::params::EKF2_OFV0_FLW_ID>) _param_ekf2_ofv0_FLW_ID,
+		(ParamInt<px4::params::EKF2_OFV0_RNG_ID>) _param_ekf2_ofv0_RNG_ID,
+		(ParamFloat<px4::params::EKF2_OFV0_DELAY>) _param_ekf2_ofv0_delay,
+		(ParamFloat<px4::params::EKF2_OFV0_NOISE>) _param_ekf2_ofv0_noise,
+		(ParamFloat<px4::params::EKF2_OFV0_GATE>) _param_ekf2_ofv0_gate,
+		(ParamFloat<px4::params::EKF2_OFV0_ROLL>) _param_ekf2_ofv0_roll,
+		(ParamFloat<px4::params::EKF2_OFV0_PITCH>) _param_ekf2_ofv0_pitch,
+		(ParamFloat<px4::params::EKF2_OFV0_YAW>) _param_ekf2_ofv0_yaw,
+		(ParamFloat<px4::params::EKF2_OFV0_POS_X>) _param_ekf2_ofv0_pos_x,
+		(ParamFloat<px4::params::EKF2_OFV0_POS_Y>) _param_ekf2_ofv0_pos_y,
+		(ParamFloat<px4::params::EKF2_OFV0_POS_Z>) _param_ekf2_ofv0_pos_z
 
 	)
 
 #endif // MODULE_NAME
 };
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VEL
 
-#endif // !EKF_OPTICAL_FLOW_UPWARD_HPP
+#endif // !EKF_OPTICAL_FLOW_VEL_HPP
