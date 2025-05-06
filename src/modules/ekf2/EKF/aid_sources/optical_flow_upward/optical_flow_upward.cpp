@@ -55,15 +55,11 @@
  uint8_t OpticalFlowUpward::getVelocityUpdateMask() const
  {
      uint8_t update_mask = 0;
-
-     // Use parameter to directly control which components to update
-     if (_param_ekf2_of_mode.get() >= 0) {
-	 // Direct mode selection from parameter
-	 return static_cast<uint8_t>(_param_ekf2_of_mode.get()) & 0x7; // Only use the first 3 bits
-     }
+     int type = _param_ekf2_of_mode.get();
+     MountingType mounting_type = static_cast<MountingType>(type);
 
      // If not directly specified, determine from mounting type
-     switch (_mounting_type) {
+     switch (mounting_type) {
 	 case MountingType::FORWARD:
 	     update_mask = 0b110; // Update Y and Z (bits 0 and 1)
 	     break;
