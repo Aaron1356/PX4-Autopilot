@@ -232,6 +232,12 @@
 
 	 // Get velocity update mask (which velocity components to use)
 	 const uint8_t vel_update_mask = getVelocityUpdateMask();
+	 Vector3f observe_var
+	 if(sample.range_m < (float)10.0){
+		observe_var = measurement_var;
+	 } else {
+		observe_var = measurement_var * 0.5;
+	 }
 
 	 // Zero out components we don't want to update
 	 if (!(vel_update_mask & 0x1)) innov(0) = 0.f; // X
@@ -239,7 +245,7 @@
 	 if (!(vel_update_mask & 0x4)) innov(2) = 0.f; // Z
 
 	 const auto state_vector = ekf._state.vector();
-	 sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, measurement_var, &innov_var, &H[0], &H[1], &H[2]);
+	 sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, observe_var, &innov_var, &H[0], &H[1], &H[2]);
 
 	 // Get innovation gate parameter
 	 float innovation_gate = _param_ekf2_of_gate.get();
@@ -248,7 +254,7 @@
 	 ekf.updateAidSourceStatus(aid_src,
 		       sample.time_us,        // sample timestamp
 		       vel_body,              // observation
-		       measurement_var,       // observation variance
+		       observe_var,       // observation variance
 		       innov,                 // innovation
 		       innov_var,             // innovation variance
 		       innovation_gate);      // innovation gate
