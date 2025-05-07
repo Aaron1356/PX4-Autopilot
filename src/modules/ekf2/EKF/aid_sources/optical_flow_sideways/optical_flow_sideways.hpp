@@ -181,7 +181,8 @@
 		 (ParamFloat<px4::params::EKF2_OFS_POS_X>) _param_ekf2_of_pos_x,
 		 (ParamFloat<px4::params::EKF2_OFS_POS_Y>) _param_ekf2_of_pos_y,
 		 (ParamFloat<px4::params::EKF2_OFS_POS_Z>) _param_ekf2_of_pos_z,
-		 (ParamInt<px4::params::EKF2_OFS_MODE>) _param_ekf2_of_mode
+		 (ParamInt<px4::params::EKF2_OFS_MODE>) _param_ekf2_of_mode,
+		 (ParamFloat<px4::params::EKF2_OFS_VAR_P>) _param_ekf2_obs_var_p
 	 )
 
  #endif // MODULE_NAME

@@ -103,3 +103,12 @@ parameters:
         1: Sideway
         2: Upward
         4: Custom
+
+    EKF2_OF1_VAR_P:
+      description:
+        short: Propotianlity value for variance
+        long: |
+          Propotianlity value for variance
+      type: float
+      default: 100.0
+      decimals: 2

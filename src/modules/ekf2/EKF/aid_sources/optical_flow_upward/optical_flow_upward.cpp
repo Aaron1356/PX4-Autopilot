@@ -230,10 +230,11 @@
 	 Vector3f innov_var;
 	 Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
 
+	 Vector3f observe_var;
+	 observe_var = measurement_var * (1.0f + sample.range_m / _param_ekf2_obs_var_p.get());
+
 	 // Get velocity update mask (which velocity components to use)
 	 const uint8_t vel_update_mask = getVelocityUpdateMask();
-	 Vector3f observe_var;
-	observe_var = measurement_var * (1 + sample.range_m/ 10);
 
 	 // Zero out components we don't want to update
 	 if (!(vel_update_mask & 0x1)) innov(0) = 0.f; // X
