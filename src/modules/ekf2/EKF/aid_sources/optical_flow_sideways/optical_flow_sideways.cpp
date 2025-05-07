@@ -231,6 +231,8 @@
 
 	 // Get velocity update mask (which velocity components to use)
 	 const uint8_t vel_update_mask = getVelocityUpdateMask();
+	 Vector3f observe_var;
+	 observe_var = measurement_var * (1 + sample.range_m/ 10);
 
 	 // Zero out components we don't want to update
 	 if (!(vel_update_mask & 0x1)) innov(0) = 0.f; // X
@@ -238,7 +240,7 @@
 	 if (!(vel_update_mask & 0x4)) innov(2) = 0.f; // Z
 
 	 const auto state_vector = ekf._state.vector();
-	 sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, measurement_var, &innov_var, &H[0], &H[1], &H[2]);
+	 sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, observe_var, &innov_var, &H[0], &H[1], &H[2]);
 
 	 // Get innovation gate parameter
 	 float innovation_gate = _param_ekf2_of_gate.get();
@@ -247,7 +249,7 @@
 	 ekf.updateAidSourceStatus(aid_src,
 		       sample.time_us,        // sample timestamp
 		       vel_body,              // observation
-		       measurement_var,       // observation variance
+		       observe_var,           // observation variance
 		       innov,                 // innovation
 		       innov_var,             // innovation variance
 		       innovation_gate);      // innovation gate
@@ -298,9 +300,6 @@
 			 }
 
 			 aid_src.innovation[index] = Vector3f(ekf._R_to_earth.transpose().row(index)) * ekf._state.vel - measurement(index);
-			PX4_INFO("Innovation X: %f", (double)innov(0));
-			PX4_INFO("Innovation Y: %f", (double)innov(1));
-			PX4_INFO("Innovation Z: %f", (double)innov(2));
 			 Ekf::VectorState Kfusion = ekf.P * H[index] / aid_src.innovation_variance[index];
 			 ekf.measurementUpdate(Kfusion, H[index], aid_src.observation_variance[index], aid_src.innovation[index]);
 		     }
