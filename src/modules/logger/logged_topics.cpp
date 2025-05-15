@@ -325,6 +325,10 @@ void LoggedTopics::add_estimator_replay_topics()
 	add_topic("vehicle_visual_odometry");
 	add_topic("aux_global_position");
 	add_topic_multi("distance_sensor");
+	add_topic("sensor_optical_flow_sideways");
+	add_topic("sensor_optical_flow_upward");
+	add_topic("distance_sensor_upward");
+	add_topic("distance_sensor_sideways");
 }
 
 void LoggedTopics::add_thermal_calibration_topics()

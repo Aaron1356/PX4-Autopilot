@@ -45,6 +45,7 @@
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/vehicle_air_data.h>
 #include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/sensor_optical_flow.h>
 #include <uORB/topics/sensor_gps.h>
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_land_detected.h>
@@ -138,6 +139,19 @@ ReplayEkf2::onSubscriptionAdded(Subscription &sub, uint16_t msg_id)
 
 	} else if (sub.orb_meta == ORB_ID(ekf2_timestamps)) {
 		_ekf2_timestamps_exists = true;
+
+	} else if (sub.orb_meta == ORB_ID(distance_sensor_upward)) {
+		_distance_sensor_upward_msg_id = msg_id;
+
+	}else if (sub.orb_meta == ORB_ID(distance_sensor_sideways)) {
+		_distance_sensor_sideways_msg_id = msg_id;
+
+	}else if (sub.orb_meta == ORB_ID(sensor_optical_flow_upward)) {
+		_optical_flow_upward_msg_id = msg_id;
+
+	}else if (sub.orb_meta == ORB_ID(sensor_optical_flow_sideways)) {
+		_optical_flow_sideways_msg_id = msg_id;
+
 	}
 
 	// the main loop should only handle publication of the following topics, the sensor topics are
@@ -153,11 +167,15 @@ ReplayEkf2::publishEkf2Topics(sensor_combined_s &sensor_combined, std::ifstream 
 {
 	findTimestampAndPublish(sensor_combined.timestamp, _airspeed_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _distance_sensor_msg_id, replay_file);
+	findTimestampAndPublish(sensor_combined.timestamp, _distance_sensor_upward_msg_id, replay_file);
+	findTimestampAndPublish(sensor_combined.timestamp, _distance_sensor_sideways_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _optical_flow_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _vehicle_air_data_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _vehicle_magnetometer_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _vehicle_visual_odometry_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _aux_global_position_msg_id, replay_file);
+	findTimestampAndPublish(sensor_combined.timestamp, _optical_flow_upward_msg_id, replay_file);
+	findTimestampAndPublish(sensor_combined.timestamp, _optical_flow_sideways_msg_id, replay_file);
 
 	// sensor_combined: publish last because ekf2 is polling on this
 	if (_last_sensor_combined_timestamp > 0) {
@@ -196,6 +214,10 @@ ReplayEkf2::publishEkf2Topics(const ekf2_timestamps_s &ekf2_timestamps, std::ifs
 	handle_sensor_publication(0, _vehicle_local_position_groundtruth_msg_id);
 	handle_sensor_publication(0, _vehicle_global_position_groundtruth_msg_id);
 	handle_sensor_publication(0, _vehicle_attitude_groundtruth_msg_id);
+	handle_sensor_publication(0, _distance_sensor_upward_msg_id);
+	handle_sensor_publication(0, _distance_sensor_sideways_msg_id);
+	handle_sensor_publication(0, _optical_flow_upward_msg_id);
+	handle_sensor_publication(0, _optical_flow_sideways_msg_id);
 
 	// sensor_combined: publish last because ekf2 is polling on this
 	if (!findTimestampAndPublish(ekf2_timestamps.timestamp, _sensor_combined_msg_id, replay_file)) {
@@ -289,6 +311,10 @@ ReplayEkf2::onExitMainLoop()
 	print_sensor_statistics(_vehicle_magnetometer_msg_id, "vehicle_magnetometer");
 	print_sensor_statistics(_vehicle_visual_odometry_msg_id, "vehicle_visual_odometry");
 	print_sensor_statistics(_aux_global_position_msg_id, "aux_global_position");
+	print_sensor_statistics(_distance_sensor_upward_msg_id, "distance_sensor_upward");
+	print_sensor_statistics(_distance_sensor_sideways_msg_id, "distance_sensor_sideways");
+	print_sensor_statistics(_optical_flow_upward_msg_id, "optical_flow_upward");
+	print_sensor_statistics(_optical_flow_sideways_msg_id, "optical_flow_sideways");
 }
 
 } // namespace px4
