@@ -168,7 +168,7 @@
 	 static constexpr uint8_t kFlowInstance = 0;
 
 	 uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow_sideways), kFlowInstance};
-	 uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor_sideways), kFlowInstance};
+	 uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor), 123};
 
 	 DEFINE_PARAMETERS(
 		 (ParamBool<px4::params::EKF2_OFS_CTRL>) _param_ekf2_of_ctrl,
