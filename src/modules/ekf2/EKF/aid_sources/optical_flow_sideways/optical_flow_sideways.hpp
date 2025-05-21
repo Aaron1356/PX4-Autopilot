@@ -57,133 +57,133 @@
  class OpticalFlowSideways : public ModuleParams
  {
  public:
-	 // Define sensor mounting type
-	 enum class MountingType {
-		 FORWARD,  // Facing forward (default)
-		 SIDEWAYS, // Facing sideways (right)
-		 UPWARD,   // Facing upward
-		 DOWNWARD, // Facing downward
-		 CUSTOM    // Custom orientation defined by parameters
-	 };
+	// Define sensor mounting type
+	enum class MountingType {
+		FORWARD,  // Facing forward (default)
+		SIDEWAYS, // Facing sideways (right)
+		UPWARD,   // Facing upward
+		DOWNWARD, // Facing downward
+		CUSTOM    // Custom orientation defined by parameters
+	};
 
-	 OpticalFlowSideways(MountingType type = MountingType::CUSTOM) :
-		 ModuleParams(nullptr),
-		 _mounting_type(type)
-	 {
-		 _estimator_aid_src_optical_flow_sideways_pub.advertise();
-	 }
+	OpticalFlowSideways(MountingType type = MountingType::CUSTOM) :
+		ModuleParams(nullptr),
+		_mounting_type(type)
+	{
+		_estimator_aid_src_optical_flow_sideways_pub.advertise();
+	}
 
-	 ~OpticalFlowSideways() = default;
+	~OpticalFlowSideways() = default;
 
-	 void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
+	void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
 
-	 void updateParameters()
-	 {
-		 updateParams();
-	 }
+	void updateParameters()
+	{
+		updateParams();
+	}
 
-	 const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
-	 const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
+	const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
+	const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
 
-	 float test_ratio_filtered() const { return _test_ratio_filtered; }
+	float test_ratio_filtered() const { return _test_ratio_filtered; }
 
-	 void setMountingType(MountingType type) { _mounting_type = type; }
+	void setMountingType(MountingType type) { _mounting_type = type; }
 
  private:
-	 bool isTimedOut(uint64_t last_sensor_timestamp, uint64_t time_delayed_us, uint64_t timeout_period) const
-	 {
-		 return (last_sensor_timestamp == 0) || (last_sensor_timestamp + timeout_period < time_delayed_us);
-	 }
+	bool isTimedOut(uint64_t last_sensor_timestamp, uint64_t time_delayed_us, uint64_t timeout_period) const
+	{
+		return (last_sensor_timestamp == 0) || (last_sensor_timestamp + timeout_period < time_delayed_us);
+	}
 
-	 /**
-	  * @brief Get velocity update mask based on mounting type and angles
-	  * This determines which velocity components (x,y,z) should be updated
-	  * @return Bit mask with bits set for components that should be updated
-	  */
-	 uint8_t getVelocityUpdateMask() const;
+	/**
+	 * @brief Get velocity update mask based on mounting type and angles
+	 * This determines which velocity components (x,y,z) should be updated
+	 * @return Bit mask with bits set for components that should be updated
+	 */
+	uint8_t getVelocityUpdateMask() const;
 
-	 /**
-	  * @brief Transform optical flow measurements to body frame velocity
-	  * @param flow_compensated_xy_rad Compensated flow measurements
-	  * @param range_m Range measurement in meters
-	  * @param flow_dt Flow integration time in seconds
-	  * @return Velocity in body frame
-	  */
-	 Vector3f flowToBodyVelocity(const Vector2f &flow_compensated_xy_rad, float range_m, float flow_dt) const;
+	/**
+	 * @brief Transform optical flow measurements to body frame velocity
+	 * @param flow_compensated_xy_rad Compensated flow measurements
+	 * @param range_m Range measurement in meters
+	 * @param flow_dt Flow integration time in seconds
+	 * @return Velocity in body frame
+	 */
+	Vector3f flowToBodyVelocity(const Vector2f &flow_compensated_xy_rad, float range_m, float flow_dt) const;
 
-	 /**
-	  * Calculate the rotation matrix from sensor to body frame
-	  * Accounts for orthogonal and non-orthogonal mounting
-	  */
-	 matrix::Dcmf calculateSensorToBodyRotation() const;
+	/**
+	 * Calculate the rotation matrix from sensor to body frame
+	 * Accounts for orthogonal and non-orthogonal mounting
+	 */
+	matrix::Dcmf calculateSensorToBodyRotation() const;
 
-	 struct OpticalFlowSample {
-		 uint64_t    time_us{};   ///< timestamp of the integration period midpoint (uSec)
-		 float       flow_dt{};
-		 Vector2f    flow_xy_rad{}; ///< measured angular rate of the image about the X and Y body axes (rad/s), RH rotation is positive
-		 Vector3f    gyro_integral{}; ///< measured angular rate of the inertial frame about the body axes obtained from rate gyro measurements (rad/s), RH rotation is positive
-		 float       range_m{};
-		 uint8_t     flow_quality{};   ///< quality indicator between 0 and 255
-	 };
+	struct OpticalFlowSample {
+		uint64_t    time_us{};   ///< timestamp of the integration period midpoint (uSec)
+		float       flow_dt{};
+		Vector2f    flow_xy_rad{}; ///< measured angular rate of the image about the X and Y body axes (rad/s), RH rotation is positive
+		Vector3f    gyro_integral{}; ///< measured angular rate of the inertial frame about the body axes obtained from rate gyro measurements (rad/s), RH rotation is positive
+		float       range_m{};
+		uint8_t     flow_quality{};   ///< quality indicator between 0 and 255
+	};
 
-	 estimator_aid_source3d_s _aid_src_optical_flow_sideways{};
-	 RingBuffer<OpticalFlowSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
-	 uint64_t _time_last_buffer_push{0};
+	estimator_aid_source3d_s _aid_src_optical_flow_sideways{};
+	RingBuffer<OpticalFlowSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
+	uint64_t _time_last_buffer_push{0};
 
-	 enum class State {
-		 stopped,
-		 starting,
-		 active,
-	 };
+	enum class State {
+		stopped,
+		starting,
+		active,
+	};
 
-	 State _state{State::stopped};
-	 MountingType _mounting_type{MountingType::CUSTOM};
+	State _state{State::stopped};
+	MountingType _mounting_type{MountingType::CUSTOM};
 
-	 float _test_ratio_filtered{INFINITY};
+	float _test_ratio_filtered{INFINITY};
 
-	 matrix::Vector3f _flow_gyro_bias{};
+	matrix::Vector3f _flow_gyro_bias{};
 
-	 matrix::Vector2f _vel_ne_innovation{};
-	 matrix::Vector2f _vel_ne_test_ratio{};
+	matrix::Vector2f _vel_ne_innovation{};
+	matrix::Vector2f _vel_ne_test_ratio{};
 
-	 Vector2f _flow_vel_body{};
+	Vector2f _flow_vel_body{};
 
-	 static constexpr float _kSensorLpfTimeConstant = 0.09f;
-	 AlphaFilter<Vector2f> _flow_sensor_vel_lpf{0.01, _kSensorLpfTimeConstant}; ///< filtered velocity from corrected flow measurement (body frame)(m/s)
-	 AlphaFilter<Vector2f> _flow_body_vel_lpf{0.01, _kSensorLpfTimeConstant}; ///< filtered velocity from corrected flow measurement (body frame)(m/s)
-	 uint32_t _flow_counter{0};                      ///< number of flow samples read for initialization
+	static constexpr float _kSensorLpfTimeConstant = 0.09f;
+	AlphaFilter<Vector2f> _flow_sensor_vel_lpf{0.01, _kSensorLpfTimeConstant}; ///< filtered velocity from corrected flow measurement (body frame)(m/s)
+	AlphaFilter<Vector2f> _flow_body_vel_lpf{0.01, _kSensorLpfTimeConstant}; ///< filtered velocity from corrected flow measurement (body frame)(m/s)
+	uint32_t _flow_counter{0};                      ///< number of flow samples read for initialization
 
-	 math::WelfordMeanVector<float, 2> _flow_mean{};
-	 math::WelfordMeanVector<float, 2> _flow_sensor_vel_mean{};
+	math::WelfordMeanVector<float, 2> _flow_mean{};
+	math::WelfordMeanVector<float, 2> _flow_sensor_vel_mean{};
 
- #if defined(MODULE_NAME)
-	 struct reset_counters_s {
-		 uint8_t lat_lon{};
-	 };
-	 reset_counters_s _reset_counters{};
+#if defined(MODULE_NAME)
+	struct reset_counters_s {
+		uint8_t lat_lon{};
+	};
+	reset_counters_s _reset_counters{};
 
-	 uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_sideways_pub{ORB_ID(estimator_aid_src_optical_flow_sideways)};
-	 uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_sideways_vel_pub{ORB_ID(estimator_optical_flow_sideways_vel)};
+	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_sideways_pub{ORB_ID(estimator_aid_src_optical_flow_sideways)};
+	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_sideways_vel_pub{ORB_ID(estimator_optical_flow_sideways_vel)};
 
-	 static constexpr uint8_t kFlowInstance = 0;
+	static constexpr uint8_t kFlowInstance = 0;
 
-	 uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow_sideways), kFlowInstance};
-	 uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor), 123};
+	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow), kFlowInstance};
+	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor), kFlowInstance};
 
-	 DEFINE_PARAMETERS(
-		 (ParamBool<px4::params::EKF2_OFS_CTRL>) _param_ekf2_of_ctrl,
-		 (ParamFloat<px4::params::EKF2_OFS_DELAY>) _param_ekf2_of_delay,
-		 (ParamFloat<px4::params::EKF2_OFS_NOISE>) _param_ekf2_of_noise,
-		 (ParamFloat<px4::params::EKF2_OFS_GATE>) _param_ekf2_of_gate,
-		 (ParamFloat<px4::params::EKF2_OFS_ROLL>) _param_ekf2_of_roll,
-		 (ParamFloat<px4::params::EKF2_OFS_PITCH>) _param_ekf2_of_pitch,
-		 (ParamFloat<px4::params::EKF2_OFS_YAW>) _param_ekf2_of_yaw,
-		 (ParamFloat<px4::params::EKF2_OFS_POS_X>) _param_ekf2_of_pos_x,
-		 (ParamFloat<px4::params::EKF2_OFS_POS_Y>) _param_ekf2_of_pos_y,
-		 (ParamFloat<px4::params::EKF2_OFS_POS_Z>) _param_ekf2_of_pos_z,
-		 (ParamInt<px4::params::EKF2_OFS_MODE>) _param_ekf2_of_mode,
-		 (ParamFloat<px4::params::EKF2_OFS_VAR_P>) _param_ekf2_obs_var_p
-	 )
+	DEFINE_PARAMETERS(
+		(ParamBool<px4::params::EKF2_OFS_CTRL>) _param_ekf2_of_ctrl,
+		(ParamFloat<px4::params::EKF2_OFS_DELAY>) _param_ekf2_of_delay,
+		(ParamFloat<px4::params::EKF2_OFS_NOISE>) _param_ekf2_of_noise,
+		(ParamFloat<px4::params::EKF2_OFS_GATE>) _param_ekf2_of_gate,
+		(ParamFloat<px4::params::EKF2_OFS_ROLL>) _param_ekf2_of_roll,
+		(ParamFloat<px4::params::EKF2_OFS_PITCH>) _param_ekf2_of_pitch,
+		(ParamFloat<px4::params::EKF2_OFS_YAW>) _param_ekf2_of_yaw,
+		(ParamFloat<px4::params::EKF2_OFS_POS_X>) _param_ekf2_of_pos_x,
+		(ParamFloat<px4::params::EKF2_OFS_POS_Y>) _param_ekf2_of_pos_y,
+		(ParamFloat<px4::params::EKF2_OFS_POS_Z>) _param_ekf2_of_pos_z,
+		(ParamInt<px4::params::EKF2_OFS_MODE>) _param_ekf2_of_mode,
+		(ParamFloat<px4::params::EKF2_OFS_VAR_P>) _param_ekf2_obs_var_p
+	)
 
  #endif // MODULE_NAME
  };

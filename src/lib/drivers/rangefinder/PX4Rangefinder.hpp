@@ -51,6 +51,7 @@ public:
 
 	void set_device_id(const uint32_t device_id) {  _distance_sensor_pub.get().device_id = device_id; };
 	void set_device_type(const uint8_t device_type);
+	void set_device_address() { _distance_sensor_pub.get().node_id = _dev_address; };
 
 	void set_fov(const float fov) { set_hfov(fov); set_vfov(fov); }
 	void set_hfov(const float fov) { _distance_sensor_pub.get().h_fov = fov; }

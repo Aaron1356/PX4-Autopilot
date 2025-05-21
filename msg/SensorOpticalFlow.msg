@@ -17,6 +17,8 @@ uint8 quality                  # quality, 0: bad quality, 255: maximum quality
 
 uint32 error_count
 
+uint8 node_id			# CAN Bus node ID
+
 float32 max_flow_rate          # (radians/s) Magnitude of maximum angular which the optical flow sensor can measure reliably
 
 float32 min_ground_distance    # (meters) Minimum distance from ground at which the optical flow sensor operates reliably
@@ -29,5 +31,4 @@ uint8 MODE_SUPER_LOWLIGHT = 3
 
 uint8 mode
 
-# TOPICS sensor_optical_flow sensor_optical_flow_upward
-# TOPICS sensor_optical_flow_sideways
+# TOPICS sensor_optical_flow
