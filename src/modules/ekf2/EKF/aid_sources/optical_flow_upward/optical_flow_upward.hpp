@@ -163,7 +163,7 @@
 	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_upward_vel_pub{ORB_ID(estimator_optical_flow_upward_vel)};
 
-	static constexpr uint8_t kFlowInstance = 0;
+	static constexpr uint8_t kFlowInstance = 1;
 
 	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow), kFlowInstance};
 	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor), kFlowInstance};
