@@ -1154,11 +1154,11 @@ private:
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
-	OpticalFlowUpward _optical_flow_upward {};
+	OpticalFlowUpward *_optical_flow_upward {new OpticalFlowUpward(1)};
 #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-	OpticalFlowSideways _optical_flow_sideways {};
+	OpticalFlowSideways *_optical_flow_sideways {new OpticalFlowSideways(0)};
 #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 };
 

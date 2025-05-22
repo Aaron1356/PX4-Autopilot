@@ -143,11 +143,11 @@ void Ekf::controlFusionModes(const imuSample &imu_delayed)
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
-	_optical_flow_upward.update(*this, imu_delayed);
+	_optical_flow_upward->update(*this, imu_delayed);
 #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-	_optical_flow_sideways.update(*this, imu_delayed);
+	_optical_flow_sideways->update(*this, imu_delayed);
 #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 
 #if defined(CONFIG_EKF2_AUXVEL)

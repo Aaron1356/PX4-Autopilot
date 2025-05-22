@@ -65,11 +65,14 @@
 		 CUSTOM    // Custom orientation defined by parameters
 	 };
 
-	 OpticalFlowUpward(MountingType type = MountingType::CUSTOM) :
-		 ModuleParams(nullptr),
-		 _mounting_type(type)
+	 OpticalFlowUpward(uint8_t flowInstance=0, MountingType type = MountingType::CUSTOM) :
+		ModuleParams(nullptr),
+		_mounting_type(type),
+		kFlowInstance(flowInstance),
+		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), kFlowInstance),
+    		_distance_sensor_sub(ORB_ID(distance_sensor), kFlowInstance)
 	 {
-		 _estimator_aid_src_optical_flow_upward_pub.advertise();
+		_estimator_aid_src_optical_flow_upward_pub.advertise();
 	 }
 
 	 ~OpticalFlowUpward() = default;
@@ -78,7 +81,7 @@
 
 	 void updateParameters()
 	 {
-		 updateParams();
+		updateParams();
 	 }
 
 	 const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
@@ -163,10 +166,10 @@
 	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_upward_vel_pub{ORB_ID(estimator_optical_flow_upward_vel)};
 
-	static constexpr uint8_t kFlowInstance = 1;
+	const uint8_t kFlowInstance=0;
 
-	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow), kFlowInstance};
-	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor), kFlowInstance};
+	uORB::Subscription _sensor_optical_flow_sub;
+	uORB::Subscription _distance_sensor_sub;
 
 	DEFINE_PARAMETERS(
 		(ParamBool<px4::params::EKF2_OF1_CTRL>) _param_ekf2_of_ctrl,
