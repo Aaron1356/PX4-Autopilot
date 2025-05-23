@@ -462,6 +462,8 @@ struct parameters {
 	float flow_innov_gate{3.0f};            ///< optical flow fusion innovation consistency gate size (STD)
 
 	Vector3f flow_pos_body{};               ///< xyz position of range sensor focal point in body frame (m)
+
+	int32_t flow_num_instances; 		///< Number of optical flow modules added
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 	// XYZ offset of sensors in body axes (m)
@@ -622,7 +624,7 @@ uint64_t mag_heading_consistent  :
 		uint64_t constant_pos            : 1; ///< 42 - true if the vehicle is at a constant position
 		uint64_t baro_fault              : 1; ///< 43 - true when the baro has been declared faulty and is no longer being used
 		uint64_t gnss_vel                : 1; ///< 44 - true if GNSS velocity measurement fusion is intended
-		uint64_t optical_flow_upward     : 1; ///< 45 - true if optical flow upward measurement fusion is intended
+		uint64_t optical_flow_base     : 1; ///< 45 - true if optical flow base measurement fusion is intended
 		uint64_t optical_flow_sideways   : 1; ///< 46 - true if optical flow Sideways measurement fusion is intended
 	} flags;
 	uint64_t value;

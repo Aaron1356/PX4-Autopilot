@@ -217,6 +217,7 @@ EKF2::EKF2(bool multi_mode, const px4::wq_config_t &config, bool replay_mode):
 	_param_ekf2_gyr_b_lim(_params->gyro_bias_lim)
 {
 	AdvertiseTopics();
+	_params->flow_num_instances= _param_ekf2_of_int.get();
 }
 
 EKF2::~EKF2()
@@ -360,9 +361,12 @@ void EKF2::AdvertiseTopics()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW) // upward
-		_estimator_optical_flow_upward_vel_pub.advertise();
-		_estimator_aid_src_optical_flow_upward_pub.advertise();
+#if defined(CONFIG_EKF2_OPTICAL_FLOW) // base
+		if(_param_ekf2_of_int.get() < 0){
+			_estimator_optical_flow_base_vel_pub.advertise();
+			_estimator_aid_src_optical_flow_base_pub.advertise();
+		}
+
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW) // sideways
@@ -1946,7 +1950,7 @@ void EKF2::PublishStatusFlags(const hrt_abstime &timestamp)
 		status_flags.cs_constant_pos        = _ekf.control_status_flags().constant_pos;
 		status_flags.cs_baro_fault	    = _ekf.control_status_flags().baro_fault;
 		status_flags.cs_gnss_vel            = _ekf.control_status_flags().gnss_vel;
-		status_flags.cs_optical_flow_upward = _ekf.control_status_flags().optical_flow_upward;
+		status_flags.cs_optical_flow_base = _ekf.control_status_flags().optical_flow_base;
 		status_flags.cs_optical_flow_sideways = _ekf.control_status_flags().optical_flow_sideways;
 
 		status_flags.fault_status_changes     = _filter_fault_status_changes;

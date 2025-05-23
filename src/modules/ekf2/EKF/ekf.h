@@ -76,6 +76,31 @@
 
 enum class Likelihood { LOW, MEDIUM, HIGH };
 class ExternalVisionVel;
+// class OpticalFlowBase;
+
+// typedef struct {
+// 		OpticalFlowBase* instance;
+// 		int id;
+// 		bool active;
+// 	} OpticalFlowComponent;
+
+// OpticalFlowComponent* create_optical_flow_array(int count) {
+// 	OpticalFlowComponent* components = new OpticalFlowComponent[count];
+
+// 	for (int i = 0; i < count; i++) {
+// 		#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+// 			components[i].instance = new OpticalFlowBase(i); // or whatever param you need
+// 			components[i].id = i;
+// 			components[i].active = true;
+// 		#else
+// 			components[i].instance = NULL;
+// 			components[i].id = i;
+// 			components[i].active = false;
+// 		#endif
+// 	}
+
+// 	return components;
+// }
 
 class Ekf final : public EstimatorInterface
 {
@@ -1155,6 +1180,7 @@ private:
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 	OpticalFlowBase *_optical_flow_base {new OpticalFlowBase(1)};
+	// OpticalFlowComponent* flow_instances = create_optical_flow_array(_params.flow_num_instances);
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)

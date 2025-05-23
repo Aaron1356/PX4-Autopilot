@@ -121,8 +121,8 @@ if(CONFIG_EKF2_OPTICAL_FLOW)
 	)
 endif()
 
-if(CONFIG_EKF2_OPTICAL_FLOW_UPWARD)
-	list(APPEND EKF_SRCS aid_sources/optical_flow_upward/optical_flow_upward.cpp)
+if(CONFIG_EKF2_OPTICAL_FLOW_BASE)
+	list(APPEND EKF_SRCS aid_sources/optical_flow_base/optical_flow_base.cpp)
 endif()
 
 if(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)

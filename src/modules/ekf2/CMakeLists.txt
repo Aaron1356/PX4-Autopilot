@@ -208,9 +208,9 @@ if(CONFIG_EKF2_OPTICAL_FLOW)
 	list(APPEND EKF_MODULE_PARAMS params_optical_flow.yaml)
 endif()
 
-if(CONFIG_EKF2_OPTICAL_FLOW_UPWARD)
-	list(APPEND EKF_SRCS EKF/aid_sources/optical_flow_upward/optical_flow_upward.cpp)
-	list(APPEND EKF_MODULE_PARAMS params_optical_flow_upward.yaml)
+if(CONFIG_EKF2_OPTICAL_FLOW_BASE)
+	list(APPEND EKF_SRCS EKF/aid_sources/optical_flow_base/optical_flow_base.cpp)
+	list(APPEND EKF_MODULE_PARAMS params_optical_flow_base.yaml)
 endif()
 
 if(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)

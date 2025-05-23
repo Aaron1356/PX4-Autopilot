@@ -697,6 +697,7 @@ private:
 		_param_ekf2_of_pos_y, ///< Y position of optical flow sensor focal point in body frame (m)
 		(ParamExtFloat<px4::params::EKF2_OF_POS_Z>)
 		_param_ekf2_of_pos_z, ///< Z position of optical flow sensor focal point in body frame (m)
+		(ParamInt<px4::params::EKF2_OF_INT>) _param_ekf2_of_int,
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_DRAG_FUSION)

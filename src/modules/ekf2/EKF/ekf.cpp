@@ -393,6 +393,10 @@ void Ekf::updateParameters()
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 	_optical_flow_base->updateParameters();
+	// for(int i =0; i < _params.flow_num_instances; i++){
+	// 	flow_instances[i].instance->updateParameters();
+	// }
+
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)

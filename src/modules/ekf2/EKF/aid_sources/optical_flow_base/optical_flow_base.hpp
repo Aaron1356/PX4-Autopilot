@@ -53,7 +53,13 @@
 
  class Ekf;
 
- class OpticalFlowBase : public ModuleParams
+ // Forward declaration
+template<uint8_t INSTANCE>
+class OpticalFlowBase;
+
+// Specialization for Instance 0
+template<>
+ class OpticalFlowBase<0> : public ModuleParams
  {
  public:
 	 // Define sensor mounting type
@@ -65,12 +71,12 @@
 		 CUSTOM    // Custom orientation defined by parameters
 	 };
 
-	 OpticalFlowBase(uint8_t flowInstance=0, MountingType type = MountingType::CUSTOM) :
+	 OpticalFlowBase(MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),
 		_mounting_type(type),
 		kFlowInstance(flowInstance),
-		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), kFlowInstance),
-    		_distance_sensor_sub(ORB_ID(distance_sensor), kFlowInstance)
+		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), 0),
+    		_distance_sensor_sub(ORB_ID(distance_sensor), 0)
 	 {
 		_estimator_aid_src_optical_flow_base_pub.advertise();
 	 }
@@ -81,6 +87,19 @@
 
 	 void updateParameters()
 	 {
+		// Now the parameter names will be correctly formed at compile time
+		_ekf2_of_ctrl = _param_ekf2_of_ctrl.get();
+		_ekf2_of_delay = _param_ekf2_of_delay.get();
+		_ekf2_of_noise = _param_ekf2_of_noise.get();
+		_ekf2_of_gate = _param_ekf2_of_gate.get();
+		_ekf2_of_roll = _param_ekf2_of_roll.get();
+		_ekf2_of_pitch = _param_ekf2_of_pitch.get();
+		_ekf2_of_yaw = _param_ekf2_of_yaw.get();
+		_ekf2_of_pos_x = _param_ekf2_of_pos_x.get();
+		_ekf2_of_pos_y = _param_ekf2_of_pos_y.get();
+		_ekf2_of_pos_z = _param_ekf2_of_pos_z.get();
+		_ekf2_of_mode = _param_ekf2_of_mode.get();
+		_ekf2_obs_var_p = _param_ekf2_obs_var_p.get();
 		updateParams();
 	 }
 
@@ -91,7 +110,23 @@
 
 	 void setMountingType(MountingType type) { _mounting_type = type; }
 
+	 static constexpr uint8_t getInstance() { return 0; }
+
  private:
+
+	bool _ekf2_of_ctrl;
+	float _ekf2_of_delay;
+	float _ekf2_of_noise;
+	float _ekf2_of_gate;
+	float _ekf2_of_roll;
+	float _ekf2_of_pitch;
+	float _ekf2_of_yaw;
+	float _ekf2_of_pos_x;
+	float _ekf2_of_pos_y;
+	float _ekf2_of_pos_z;
+	int _ekf2_of_mode;
+	float _ekf2_obs_var_p;
+
 	bool isTimedOut(uint64_t last_sensor_timestamp, uint64_t time_delayed_us, uint64_t timeout_period) const
 	{
 		return (last_sensor_timestamp == 0) || (last_sensor_timestamp + timeout_period < time_delayed_us);
@@ -166,7 +201,6 @@
 	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_base_pub{ORB_ID(estimator_aid_src_optical_flow_base)};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_base_vel_pub{ORB_ID(estimator_optical_flow_base_vel)};
 
-	const uint8_t kFlowInstance=0;
 
 	uORB::Subscription _sensor_optical_flow_sub;
 	uORB::Subscription _distance_sensor_sub;
