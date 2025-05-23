@@ -26,5 +26,5 @@ float32[3] gyro_bias
 float32[3] ref_gyro
 
 # TOPICS estimator_optical_flow_vel vehicle_optical_flow_vel
-# TOPICS estimator_optical_flow_upward_vel
+# TOPICS estimator_optical_flow_base_vel
 # TOPICS estimator_optical_flow_sideways_vel

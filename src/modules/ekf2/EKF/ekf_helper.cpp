@@ -297,10 +297,10 @@ void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 			float gndclearance = math::max(_params.rng_gnd_clearance, 0.1f);
 			vel_err_conservative = math::max(getHagl(), gndclearance) * Vector2f(_aid_src_optical_flow.innovation).norm();
 
-		} else if (_control_status.flags.optical_flow_upward) {
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
-			vel_err_conservative = _optical_flow_upward->innovation().norm();
-#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+		} else if (_control_status.flags.optical_flow_base) {
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+			vel_err_conservative = _optical_flow_base->innovation().norm();
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 		} else if (_control_status.flags.optical_flow_sideways) {
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
@@ -486,13 +486,13 @@ float Ekf::getHorizontalVelocityInnovationTestRatio() const
 		}
 	}
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
-	if (isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.optical_flow_upward)) {
-		test_ratio = math::max(test_ratio, fabsf(_optical_flow_upward->test_ratio_filtered()));
+	if (isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.optical_flow_base)) {
+		test_ratio = math::max(test_ratio, fabsf(_optical_flow_base->test_ratio_filtered()));
 	}
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
 
@@ -861,20 +861,20 @@ void Ekf::updateHorizontalDeadReckoningstatus()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
-	// optical flow upward active
-	if (_control_status.flags.optical_flow_upward
+	// optical flow base active
+	if (_control_status.flags.optical_flow_base
 	    && isRecent(_time_last_hor_vel_fuse, _params.no_aid_timeout_max)
 	   ) {
 		inertial_dead_reckoning = false;
 	}
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
 
-	// optical flow upward active
+	// optical flow base active
 	if (_control_status.flags.optical_flow_sideways
 	    && isRecent(_time_last_hor_vel_fuse, _params.no_aid_timeout_max)
 	   ) {

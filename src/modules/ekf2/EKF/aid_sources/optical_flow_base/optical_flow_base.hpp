@@ -31,15 +31,15 @@
  *
  ****************************************************************************/
 
- #ifndef EKF_OPTICAL_FLOW_UPWARD_HPP
- #define EKF_OPTICAL_FLOW_UPWARD_HPP
+ #ifndef EKF_OPTICAL_FLOW_BASE_HPP
+ #define EKF_OPTICAL_FLOW_BASE_HPP
 
  #include "../../common.h"
  #include "../../RingBuffer.h"
 
  #include <lib/mathlib/math/WelfordMeanVector.hpp>
 
- #if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+ #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
  #if defined(MODULE_NAME)
  # include <px4_platform_common/module_params.h>
@@ -53,7 +53,7 @@
 
  class Ekf;
 
- class OpticalFlowUpward : public ModuleParams
+ class OpticalFlowBase : public ModuleParams
  {
  public:
 	 // Define sensor mounting type
@@ -65,17 +65,17 @@
 		 CUSTOM    // Custom orientation defined by parameters
 	 };
 
-	 OpticalFlowUpward(uint8_t flowInstance=0, MountingType type = MountingType::CUSTOM) :
+	 OpticalFlowBase(uint8_t flowInstance=0, MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),
 		_mounting_type(type),
 		kFlowInstance(flowInstance),
 		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), kFlowInstance),
     		_distance_sensor_sub(ORB_ID(distance_sensor), kFlowInstance)
 	 {
-		_estimator_aid_src_optical_flow_upward_pub.advertise();
+		_estimator_aid_src_optical_flow_base_pub.advertise();
 	 }
 
-	 ~OpticalFlowUpward() = default;
+	 ~OpticalFlowBase() = default;
 
 	 void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
 
@@ -128,7 +128,7 @@
 		uint8_t     flow_quality{};   ///< quality indicator between 0 and 255
 	};
 
-	estimator_aid_source3d_s _aid_src_optical_flow_upward{};
+	estimator_aid_source3d_s _aid_src_optical_flow_base{};
 	RingBuffer<OpticalFlowSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
 	uint64_t _time_last_buffer_push{0};
 
@@ -163,8 +163,8 @@
 	};
 	reset_counters_s _reset_counters{};
 
-	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
-	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_upward_vel_pub{ORB_ID(estimator_optical_flow_upward_vel)};
+	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_base_pub{ORB_ID(estimator_aid_src_optical_flow_base)};
+	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_base_vel_pub{ORB_ID(estimator_optical_flow_base_vel)};
 
 	const uint8_t kFlowInstance=0;
 
@@ -189,6 +189,6 @@
  #endif // MODULE_NAME
  };
 
- #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+ #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
- #endif // !EKF_OPTICAL_FLOW_UPWARD_HPP
+ #endif // !EKF_OPTICAL_FLOW_BASE_HPP

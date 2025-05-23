@@ -391,9 +391,9 @@ void Ekf::updateParameters()
 	_aux_global_position.updateParameters();
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
-	_optical_flow_upward->updateParameters();
-#endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+	_optical_flow_base->updateParameters();
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
 	_optical_flow_sideways->updateParameters();
