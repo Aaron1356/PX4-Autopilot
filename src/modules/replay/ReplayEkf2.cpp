@@ -140,18 +140,6 @@ ReplayEkf2::onSubscriptionAdded(Subscription &sub, uint16_t msg_id)
 	} else if (sub.orb_meta == ORB_ID(ekf2_timestamps)) {
 		_ekf2_timestamps_exists = true;
 
-	} else if (sub.orb_meta == ORB_ID(distance_sensor_base)) {
-		_distance_sensor_base_msg_id = msg_id;
-
-	}else if (sub.orb_meta == ORB_ID(distance_sensor_sideways)) {
-		_distance_sensor_sideways_msg_id = msg_id;
-
-	}else if (sub.orb_meta == ORB_ID(sensor_optical_flow_base)) {
-		_optical_flow_base_msg_id = msg_id;
-
-	}else if (sub.orb_meta == ORB_ID(sensor_optical_flow_sideways)) {
-		_optical_flow_sideways_msg_id = msg_id;
-
 	}
 
 	// the main loop should only handle publication of the following topics, the sensor topics are
