@@ -53,13 +53,7 @@
 
  class Ekf;
 
- // Forward declaration
-template<uint8_t INSTANCE>
-class OpticalFlowBase;
-
-// Specialization for Instance 0
-template<>
- class OpticalFlowBase<0> : public ModuleParams
+ class OpticalFlowBase : public ModuleParams
  {
  public:
 	 // Define sensor mounting type
@@ -71,13 +65,52 @@ template<>
 		 CUSTOM    // Custom orientation defined by parameters
 	 };
 
-	 OpticalFlowBase(MountingType type = MountingType::CUSTOM) :
+	 OpticalFlowBase(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),
 		_mounting_type(type),
 		kFlowInstance(flowInstance),
 		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), 0),
     		_distance_sensor_sub(ORB_ID(distance_sensor), 0)
 	 {
+		// Initialize parameter handles dynamically
+		char param_name[64];
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_CTRL", flowInstance);
+		_param_ekf2_of_ctrl = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_DELAY", flowInstance);
+		_param_ekf2_of_delay = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_NOISE", flowInstance);
+		_param_ekf2_of_noise = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_GATE", flowInstance);
+		_param_ekf2_of_gate = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_ROLL", flowInstance);
+		_param_ekf2_of_roll = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_PITCH", flowInstance);
+		_param_ekf2_of_pitch = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_YAW", flowInstance);
+		_param_ekf2_of_yaw = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_POS_X", flowInstance);
+		_param_ekf2_of_pos_x = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_POS_Y", flowInstance);
+		_param_ekf2_of_pos_y = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_POS_Z", flowInstance);
+		_param_ekf2_of_pos_z = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_MODE", flowInstance);
+		_param_ekf2_of_mode = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_VAR_P", flowInstance);
+		_param_ekf2_obs_var_p = param_find(param_name);
+
 		_estimator_aid_src_optical_flow_base_pub.advertise();
 	 }
 
@@ -87,19 +120,57 @@ template<>
 
 	 void updateParameters()
 	 {
-		// Now the parameter names will be correctly formed at compile time
-		_ekf2_of_ctrl = _param_ekf2_of_ctrl.get();
-		_ekf2_of_delay = _param_ekf2_of_delay.get();
-		_ekf2_of_noise = _param_ekf2_of_noise.get();
-		_ekf2_of_gate = _param_ekf2_of_gate.get();
-		_ekf2_of_roll = _param_ekf2_of_roll.get();
-		_ekf2_of_pitch = _param_ekf2_of_pitch.get();
-		_ekf2_of_yaw = _param_ekf2_of_yaw.get();
-		_ekf2_of_pos_x = _param_ekf2_of_pos_x.get();
-		_ekf2_of_pos_y = _param_ekf2_of_pos_y.get();
-		_ekf2_of_pos_z = _param_ekf2_of_pos_z.get();
-		_ekf2_of_mode = _param_ekf2_of_mode.get();
-		_ekf2_obs_var_p = _param_ekf2_obs_var_p.get();
+		// Get parameter values using handles
+		int32_t tmp_int;
+		float tmp_float;
+
+		if (param_get(_param_ekf2_of_ctrl, &tmp_int) == PX4_OK) {
+			_ekf2_of_ctrl = (tmp_int != 0);
+		}
+
+		if (param_get(_param_ekf2_of_delay, &tmp_float) == PX4_OK) {
+			_ekf2_of_delay = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_noise, &tmp_float) == PX4_OK) {
+			_ekf2_of_noise = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_gate, &tmp_float) == PX4_OK) {
+			_ekf2_of_gate = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_roll, &tmp_float) == PX4_OK) {
+			_ekf2_of_roll = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pitch, &tmp_float) == PX4_OK) {
+			_ekf2_of_pitch = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_yaw, &tmp_float) == PX4_OK) {
+			_ekf2_of_yaw = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pos_x, &tmp_float) == PX4_OK) {
+			_ekf2_of_pos_x = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pos_y, &tmp_float) == PX4_OK) {
+			_ekf2_of_pos_y = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pos_z, &tmp_float) == PX4_OK) {
+			_ekf2_of_pos_z = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_mode, &tmp_int) == PX4_OK) {
+			_ekf2_of_mode = tmp_int;
+		}
+
+		if (param_get(_param_ekf2_obs_var_p, &tmp_float) == PX4_OK) {
+			_ekf2_obs_var_p = tmp_float;
+		}
 		updateParams();
 	 }
 
@@ -126,6 +197,20 @@ template<>
 	float _ekf2_of_pos_z;
 	int _ekf2_of_mode;
 	float _ekf2_obs_var_p;
+
+	// Parameter handles for dynamic parameters
+	param_t _param_ekf2_of_ctrl;
+	param_t _param_ekf2_of_delay;
+	param_t _param_ekf2_of_noise;
+	param_t _param_ekf2_of_gate;
+	param_t _param_ekf2_of_roll;
+	param_t _param_ekf2_of_pitch;
+	param_t _param_ekf2_of_yaw;
+	param_t _param_ekf2_of_pos_x;
+	param_t _param_ekf2_of_pos_y;
+	param_t _param_ekf2_of_pos_z;
+	param_t _param_ekf2_of_mode;
+	param_t _param_ekf2_obs_var_p;
 
 	bool isTimedOut(uint64_t last_sensor_timestamp, uint64_t time_delayed_us, uint64_t timeout_period) const
 	{
@@ -201,24 +286,10 @@ template<>
 	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_base_pub{ORB_ID(estimator_aid_src_optical_flow_base)};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_base_vel_pub{ORB_ID(estimator_optical_flow_base_vel)};
 
+	const uint8_t kFlowInstance = 0;
 
 	uORB::Subscription _sensor_optical_flow_sub;
 	uORB::Subscription _distance_sensor_sub;
-
-	DEFINE_PARAMETERS(
-		(ParamBool<px4::params::EKF2_OF1_CTRL>) _param_ekf2_of_ctrl,
-		(ParamFloat<px4::params::EKF2_OF1_DELAY>) _param_ekf2_of_delay,
-		(ParamFloat<px4::params::EKF2_OF1_NOISE>) _param_ekf2_of_noise,
-		(ParamFloat<px4::params::EKF2_OF1_GATE>) _param_ekf2_of_gate,
-		(ParamFloat<px4::params::EKF2_OF1_ROLL>) _param_ekf2_of_roll,
-		(ParamFloat<px4::params::EKF2_OF1_PITCH>) _param_ekf2_of_pitch,
-		(ParamFloat<px4::params::EKF2_OF1_YAW>) _param_ekf2_of_yaw,
-		(ParamFloat<px4::params::EKF2_OF1_POS_X>) _param_ekf2_of_pos_x,
-		(ParamFloat<px4::params::EKF2_OF1_POS_Y>) _param_ekf2_of_pos_y,
-		(ParamFloat<px4::params::EKF2_OF1_POS_Z>) _param_ekf2_of_pos_z,
-		(ParamInt<px4::params::EKF2_OF1_MODE>) _param_ekf2_of_mode,
-		(ParamFloat<px4::params::EKF2_OF1_VAR_P>) _param_ekf2_obs_var_p
-	)
 
  #endif // MODULE_NAME
  };

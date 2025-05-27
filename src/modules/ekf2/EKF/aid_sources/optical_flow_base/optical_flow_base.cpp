@@ -44,9 +44,9 @@
  matrix::Dcmf OpticalFlowBase::calculateSensorToBodyRotation() const
  {
      // Get rotation parameters
-     const float roll = math::radians(_param_ekf2_of_roll.get());
-     const float pitch = math::radians(_param_ekf2_of_pitch.get());
-     const float yaw = math::radians(_param_ekf2_of_yaw.get());
+     const float roll = math::radians(_ekf2_of_roll);
+     const float pitch = math::radians(_ekf2_of_pitch);
+     const float yaw = math::radians(_ekf2_of_yaw);
 
      // Create a rotation matrix using Euler angles
      return matrix::Dcmf(matrix::Eulerf(roll, pitch, yaw));
@@ -55,7 +55,7 @@
  uint8_t OpticalFlowBase::getVelocityUpdateMask() const
  {
      uint8_t update_mask = 0;
-     int type = _param_ekf2_of_mode.get();
+     int type = _ekf2_of_mode;
      MountingType mounting_type = static_cast<MountingType>(type);
 
      // If not directly specified, determine from mounting type
@@ -147,7 +147,7 @@
 	 // correct timestamp to midpoint of integration interval as the data is converted to rates
 	 const int64_t time_us = sensor_optical_flow.timestamp_sample
 		     - sensor_optical_flow.integration_timespan_us / 2
-		     - static_cast<int64_t>(_param_ekf2_of_delay.get() * 1000);
+		     - static_cast<int64_t>(_ekf2_of_delay * 1000);
 
 	 if (time_us > 0 && PX4_ISFINITE(range_m)) {
 	     OpticalFlowSample sample{
@@ -169,7 +169,7 @@
      OpticalFlowSample sample;
 
      if (_ringbuffer.pop_first_older_than(imu_delayed.time_us, &sample)) {
-	 if (!_param_ekf2_of_ctrl.get()) {
+	 if (!_ekf2_of_ctrl) {
 	     return;
 	 }
 
@@ -190,9 +190,9 @@
 	 const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
 
 	 // Get sensor position in body frame
-	 Vector3f flow_pos_body = Vector3f(_param_ekf2_of_pos_x.get(),
-					_param_ekf2_of_pos_y.get(),
-					_param_ekf2_of_pos_z.get());
+	 Vector3f flow_pos_body = Vector3f(_ekf2_of_pos_x,
+					_ekf2_of_pos_y,
+					_ekf2_of_pos_z);
 
 	 // Account for lever arm effect - angular velocity creates apparent velocity at sensor position
 	 const Vector3f angular_velocity = imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf._state.gyro_bias;
@@ -220,7 +220,7 @@
 	 }
 
 	 // Determine observation noise based on quality parameter
-	 const float R = math::max(_param_ekf2_of_noise.get(), 0.01f);
+	 const float R = math::max(_ekf2_of_noise, 0.01f);
 
 	 const Vector3f measurement{vel_body};
 	 const Vector3f measurement_var{R, R, R};
@@ -231,7 +231,7 @@
 	 Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
 
 	 Vector3f observe_var;
-	 observe_var = measurement_var * (1.0f + sample.range_m / _param_ekf2_obs_var_p.get());
+	 observe_var = measurement_var * (1.0f + sample.range_m / _ekf2_obs_var_p);
 
 	 // Get velocity update mask (which velocity components to use)
 	 const uint8_t vel_update_mask = getVelocityUpdateMask();
@@ -245,7 +245,7 @@
 	 sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, observe_var, &innov_var, &H[0], &H[1], &H[2]);
 
 	 // Get innovation gate parameter
-	 float innovation_gate = _param_ekf2_of_gate.get();
+	 float innovation_gate = _ekf2_of_gate;
 
 	 // Update aid source status with new measurement
 	 ekf.updateAidSourceStatus(aid_src,
