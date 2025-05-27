@@ -298,8 +298,8 @@ public:
 	void enableControlStatusAuxGpos() { _control_status.flags.aux_gpos = true; }
 	void disableControlStatusAuxGpos() { _control_status.flags.aux_gpos = false; }
 
-	void enableControlStatusOpticalFlowUpward() { _control_status.flags.optical_flow_upward = true; }
-	void disableControlStatusOpticalFlowUpward() { _control_status.flags.optical_flow_upward = false; }
+	void enableControlStatusOpticalFlowBase() { _control_status.flags.optical_flow_base = true; }
+	void disableControlStatusOpticalFlowBase() { _control_status.flags.optical_flow_base = false; }
 
 	void enableControlStatusOpticalFlowSideways() { _control_status.flags.optical_flow_sideways = true; }
 	void disableControlStatusOpticalFlowSideways() { _control_status.flags.optical_flow_sideways = false; }

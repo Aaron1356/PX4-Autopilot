@@ -42,32 +42,33 @@ class PX4Rangefinder
 {
 public:
 	PX4Rangefinder(const uint32_t device_id,
-		       const uint8_t device_orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING, const uint8_t device_address = 0);
+		       const uint8_t device_orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING,
+		       const uint8_t device_address = 0);
 	~PX4Rangefinder();
 
 	// Set the MAV_DISTANCE_SENSOR type (LASER, ULTRASOUND, INFRARED, RADAR)
-	void set_rangefinder_type(uint8_t rangefinder_type) { _dev_address == 124 ? _distance_sensor_upward_pub.get().type = rangefinder_type : _distance_sensor_sideways_pub.get().type = rangefinder_type; };
+	void set_rangefinder_type(uint8_t rangefinder_type) { _distance_sensor_pub.get().type = rangefinder_type; };
 
-	void set_device_id(const uint32_t device_id) { _dev_address == 124 ? _distance_sensor_upward_pub.get().device_id = device_id : _distance_sensor_sideways_pub.get().device_id = device_id; };
+	void set_device_id(const uint32_t device_id) {  _distance_sensor_pub.get().device_id = device_id; };
 	void set_device_type(const uint8_t device_type);
 
 	void set_fov(const float fov) { set_hfov(fov); set_vfov(fov); }
-	void set_hfov(const float fov) { _dev_address == 124 ? _distance_sensor_upward_pub.get().h_fov = fov : _distance_sensor_sideways_pub.get().h_fov = fov; }
-	void set_vfov(const float fov) { _dev_address == 124 ? _distance_sensor_upward_pub.get().v_fov = fov : _distance_sensor_sideways_pub.get().v_fov = fov; }
+	void set_hfov(const float fov) { _distance_sensor_pub.get().h_fov = fov; }
+	void set_vfov(const float fov) { _distance_sensor_pub.get().v_fov = fov; }
 
-	void set_max_distance(const float distance) { _dev_address == 124 ? _distance_sensor_upward_pub.get().max_distance = distance : _distance_sensor_sideways_pub.get().max_distance = distance; }
-	void set_min_distance(const float distance) { _dev_address == 124 ? _distance_sensor_upward_pub.get().min_distance = distance : _distance_sensor_sideways_pub.get().min_distance = distance; }
+	void set_max_distance(const float distance) { _distance_sensor_pub.get().max_distance = distance; }
+	void set_min_distance(const float distance) { _distance_sensor_pub.get().min_distance = distance; }
 
 	void set_orientation(const uint8_t device_orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING);
 
-	void set_mode(const uint8_t mode) { _dev_address == 124 ? _distance_sensor_upward_pub.get().mode = mode : _distance_sensor_sideways_pub.get().mode = mode; }
+	void set_mode(const uint8_t mode) { _distance_sensor_pub.get().mode = mode; }
 
 	void update(const hrt_abstime &timestamp_sample, const float distance, const int8_t quality = -1);
 
-	int get_instance() { return _dev_address == 124 ? _distance_sensor_upward_pub.get_instance() : _distance_sensor_sideways_pub.get_instance(); };
+	int get_instance() { return _distance_sensor_pub.get_instance(); };
 
 private:
-	uORB::PublicationMultiData<distance_sensor_s> _distance_sensor_sideways_pub{ORB_ID(distance_sensor_sideways)};
-	uORB::PublicationMultiData<distance_sensor_s> _distance_sensor_upward_pub{ORB_ID(distance_sensor_upward)};
+
+	uORB::PublicationMultiData<distance_sensor_s> _distance_sensor_pub{ORB_ID(distance_sensor)};
 	uint8_t _dev_address{0};
 };

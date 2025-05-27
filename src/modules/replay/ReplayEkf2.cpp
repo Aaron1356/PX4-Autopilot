@@ -45,6 +45,7 @@
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/vehicle_air_data.h>
 #include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/sensor_optical_flow.h>
 #include <uORB/topics/sensor_gps.h>
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_land_detected.h>
@@ -138,6 +139,7 @@ ReplayEkf2::onSubscriptionAdded(Subscription &sub, uint16_t msg_id)
 
 	} else if (sub.orb_meta == ORB_ID(ekf2_timestamps)) {
 		_ekf2_timestamps_exists = true;
+
 	}
 
 	// the main loop should only handle publication of the following topics, the sensor topics are

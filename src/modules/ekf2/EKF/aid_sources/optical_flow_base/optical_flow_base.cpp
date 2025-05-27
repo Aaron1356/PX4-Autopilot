@@ -33,29 +33,29 @@
 
  #include "ekf.h"
 
- #include "aid_sources/optical_flow_upward/optical_flow_upward.hpp"
+ #include "aid_sources/optical_flow_base/optical_flow_base.hpp"
 
  #include "ekf_derivation/generated/compute_body_vel_innov_var_h.h"
  #include "ekf_derivation/generated/compute_body_vel_y_innov_var.h"
  #include "ekf_derivation/generated/compute_body_vel_z_innov_var.h"
 
- #if defined(CONFIG_EKF2_OPTICAL_FLOW_UPWARD) && defined(MODULE_NAME)
+ #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
- matrix::Dcmf OpticalFlowUpward::calculateSensorToBodyRotation() const
+ matrix::Dcmf OpticalFlowBase::calculateSensorToBodyRotation() const
  {
      // Get rotation parameters
-     const float roll = math::radians(_param_ekf2_of_roll.get());
-     const float pitch = math::radians(_param_ekf2_of_pitch.get());
-     const float yaw = math::radians(_param_ekf2_of_yaw.get());
+     const float roll = math::radians(_ekf2_of_roll);
+     const float pitch = math::radians(_ekf2_of_pitch);
+     const float yaw = math::radians(_ekf2_of_yaw);
 
      // Create a rotation matrix using Euler angles
      return matrix::Dcmf(matrix::Eulerf(roll, pitch, yaw));
  }
 
- uint8_t OpticalFlowUpward::getVelocityUpdateMask() const
+ uint8_t OpticalFlowBase::getVelocityUpdateMask() const
  {
      uint8_t update_mask = 0;
-     int type = _param_ekf2_of_mode.get();
+     int type = _ekf2_of_mode;
      MountingType mounting_type = static_cast<MountingType>(type);
 
      // If not directly specified, determine from mounting type
@@ -101,7 +101,7 @@
      return update_mask;
  }
 
- Vector3f OpticalFlowUpward::flowToBodyVelocity(const Vector2f &flow_compensated_xy_rad, float range_m, float flow_dt) const
+ Vector3f OpticalFlowBase::flowToBodyVelocity(const Vector2f &flow_compensated_xy_rad, float range_m, float flow_dt) const
  {
      // Convert from flow rate to velocity in sensor frame
      Vector3f vel_sensor;
@@ -116,7 +116,7 @@
      return R_to_body * vel_sensor;
  }
 
- void OpticalFlowUpward::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
+ void OpticalFlowBase::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
  {
  #if defined(MODULE_NAME)
 
@@ -147,7 +147,7 @@
 	 // correct timestamp to midpoint of integration interval as the data is converted to rates
 	 const int64_t time_us = sensor_optical_flow.timestamp_sample
 		     - sensor_optical_flow.integration_timespan_us / 2
-		     - static_cast<int64_t>(_param_ekf2_of_delay.get() * 1000);
+		     - static_cast<int64_t>(_ekf2_of_delay * 1000);
 
 	 if (time_us > 0 && PX4_ISFINITE(range_m)) {
 	     OpticalFlowSample sample{
@@ -169,11 +169,11 @@
      OpticalFlowSample sample;
 
      if (_ringbuffer.pop_first_older_than(imu_delayed.time_us, &sample)) {
-	 if (!_param_ekf2_of_ctrl.get()) {
+	 if (!_ekf2_of_ctrl) {
 	     return;
 	 }
 
-	 estimator_aid_source3d_s &aid_src = _aid_src_optical_flow_upward;
+	 estimator_aid_source3d_s &aid_src = _aid_src_optical_flow_base;
 
 	 // compensate for body motion to give a LOS rate
 	 const Vector2f flow_compensated_xy_rad = sample.flow_xy_rad - sample.gyro_integral.xy();
@@ -190,9 +190,9 @@
 	 const Vector3f ref_body_rate = -(imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf.getGyroBias());
 
 	 // Get sensor position in body frame
-	 Vector3f flow_pos_body = Vector3f(_param_ekf2_of_pos_x.get(),
-					_param_ekf2_of_pos_y.get(),
-					_param_ekf2_of_pos_z.get());
+	 Vector3f flow_pos_body = Vector3f(_ekf2_of_pos_x,
+					_ekf2_of_pos_y,
+					_ekf2_of_pos_z);
 
 	 // Account for lever arm effect - angular velocity creates apparent velocity at sensor position
 	 const Vector3f angular_velocity = imu_delayed.delta_ang / imu_delayed.delta_ang_dt - ekf._state.gyro_bias;
@@ -220,7 +220,7 @@
 	 }
 
 	 // Determine observation noise based on quality parameter
-	 const float R = math::max(_param_ekf2_of_noise.get(), 0.01f);
+	 const float R = math::max(_ekf2_of_noise, 0.01f);
 
 	 const Vector3f measurement{vel_body};
 	 const Vector3f measurement_var{R, R, R};
@@ -231,7 +231,7 @@
 	 Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
 
 	 Vector3f observe_var;
-	 observe_var = measurement_var * (1.0f + sample.range_m / _param_ekf2_obs_var_p.get());
+	 observe_var = measurement_var * (1.0f + sample.range_m / _ekf2_obs_var_p);
 
 	 // Get velocity update mask (which velocity components to use)
 	 const uint8_t vel_update_mask = getVelocityUpdateMask();
@@ -245,7 +245,7 @@
 	 sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, observe_var, &innov_var, &H[0], &H[1], &H[2]);
 
 	 // Get innovation gate parameter
-	 float innovation_gate = _param_ekf2_of_gate.get();
+	 float innovation_gate = _ekf2_of_gate;
 
 	 // Update aid source status with new measurement
 	 ekf.updateAidSourceStatus(aid_src,
@@ -278,7 +278,7 @@
 		     bool reset = false;
 
 		     if (fused || reset) {
-			 ekf.enableControlStatusOpticalFlowUpward();
+			 ekf.enableControlStatusOpticalFlowBase();
 			 _state = State::active;
 		     }
 		 }
@@ -315,15 +315,15 @@
 		 }
 
 		 if (isTimedOut(aid_src.time_last_fuse, imu_delayed.time_us, ekf._params.no_aid_timeout_max)) {
-		     if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_upward)) {
+		     if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_base)) {
 			 // TODO: Handle reset if this is the only source of horizontal aiding
 		     } else {
-			 ekf.disableControlStatusOpticalFlowUpward();
+			 ekf.disableControlStatusOpticalFlowBase();
 			 _state = State::stopped;
 		     }
 		 }
 	     } else {
-		 ekf.disableControlStatusOpticalFlowUpward();
+		 ekf.disableControlStatusOpticalFlowBase();
 		 _state = State::stopped;
 	     }
 	     break;
@@ -335,7 +335,7 @@
  #if defined(MODULE_NAME)
 	// Publish aid source data
 	aid_src.timestamp = hrt_absolute_time();
-	_estimator_aid_src_optical_flow_upward_pub.publish(aid_src);
+	_estimator_aid_src_optical_flow_base_pub.publish(aid_src);
 
 	// Publish optical flow velocity
 	{
@@ -371,7 +371,7 @@
 		gyro_rate.copyTo(flow_vel.gyro_rate);
 		ref_body_rate.copyTo(flow_vel.ref_gyro);
 		flow_vel.timestamp = hrt_absolute_time();
-		_estimator_optical_flow_upward_vel_pub.publish(flow_vel);
+		_estimator_optical_flow_base_vel_pub.publish(flow_vel);
 	}
 
 	// Update test ratios
@@ -383,10 +383,10 @@
  #endif // MODULE_NAME
 
      } else if ((_state != State::stopped) && isTimedOut(_time_last_buffer_push, imu_delayed.time_us, (uint64_t)5e6)) {
-	 ekf.disableControlStatusOpticalFlowUpward();
+	 ekf.disableControlStatusOpticalFlowBase();
 	 _state = State::stopped;
 	 ECL_WARN("Optical flow data stopped");
      }
  }
 
- #endif // CONFIG_EKF2_OPTICAL_FLOW_UPWARD
+ #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE

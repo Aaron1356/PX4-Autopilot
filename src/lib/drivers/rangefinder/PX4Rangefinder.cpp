@@ -42,91 +42,46 @@ PX4Rangefinder::PX4Rangefinder(const uint32_t device_id, const uint8_t device_or
 	set_orientation(device_orientation);
 	set_rangefinder_type(distance_sensor_s::MAV_DISTANCE_SENSOR_LASER);
 	set_mode(distance_sensor_s::MODE_UNKNOWN);
-
 }
 
 PX4Rangefinder::~PX4Rangefinder()
 {
-	if (_dev_address == 124) {
-		_distance_sensor_upward_pub.unadvertise();
-
-	} else {
-		_distance_sensor_sideways_pub.unadvertise();
-
-	}
-
+	_distance_sensor_pub.unadvertise();
 }
 
 void PX4Rangefinder::set_device_type(uint8_t device_type)
 {
 	// current DeviceStructure
 	union device::Device::DeviceId device_id;
+	device_id.devid = _distance_sensor_pub.get().device_id;
 
-	if (_dev_address == 124) {
-		device_id.devid = _distance_sensor_upward_pub.get().device_id;
+	// update to new device type
+	device_id.devid_s.devtype = device_type;
 
-		// update to new device type
-		device_id.devid_s.devtype = device_type;
-
-		// copy back to report
-		_distance_sensor_upward_pub.get().device_id = device_id.devid;
-
-	} else {
-		device_id.devid = _distance_sensor_sideways_pub.get().device_id;
-
-		// update to new device type
-		device_id.devid_s.devtype = device_type;
-
-		// copy back to report
-		_distance_sensor_sideways_pub.get().device_id = device_id.devid;
-
-	}
+	// copy back to report
+	_distance_sensor_pub.get().device_id = device_id.devid;
 }
 
 void PX4Rangefinder::set_orientation(const uint8_t device_orientation)
 {
-	if (_dev_address == 124) {
-		_distance_sensor_upward_pub.get().orientation = device_orientation;
-
-	} else {
-		_distance_sensor_sideways_pub.get().orientation = device_orientation;
-
-	}
-
+	distance_sensor_s &report = _distance_sensor_pub.get();
+	report.orientation = device_orientation;
 }
 
 void PX4Rangefinder::update(const hrt_abstime &timestamp_sample, const float distance, const int8_t quality)
 {
-	if (_dev_address == 124) {
-		distance_sensor_s &report = _distance_sensor_upward_pub.get();
-		report.timestamp = timestamp_sample;
-		report.current_distance = distance;
-		report.signal_quality = quality;
+	distance_sensor_s &report = _distance_sensor_pub.get();
+	report.timestamp = timestamp_sample;
+	report.current_distance = distance;
+	report.signal_quality = quality;
 
-		// if quality is unavailable (-1) set to 0 if distance is outside bounds
-		if (quality < 0) {
-			if ((distance < report.min_distance) || (distance > report.max_distance)) {
-				report.signal_quality = 0;
-			}
+	// if quality is unavailable (-1) set to 0 if distance is outside bounds
+	if (quality < 0) {
+		if ((distance < report.min_distance) || (distance > report.max_distance)) {
+			report.signal_quality = 0;
 		}
-
-		_distance_sensor_upward_pub.update();
-
-	} else {
-
-		distance_sensor_s &report = _distance_sensor_sideways_pub.get();
-		report.timestamp = timestamp_sample;
-		report.current_distance = distance;
-		report.signal_quality = quality;
-
-		// if quality is unavailable (-1) set to 0 if distance is outside bounds
-		if (quality < 0) {
-			if ((distance < report.min_distance) || (distance > report.max_distance)) {
-				report.signal_quality = 0;
-			}
-		}
-
-		_distance_sensor_sideways_pub.update();
 	}
+
+	_distance_sensor_pub.publish(report);
 
 }

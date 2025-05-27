@@ -349,13 +349,13 @@ private:
 	hrt_abstime _optical_flow_vel_pub_last{0};
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW) // upward
-	uORB::Subscription _sensor_optical_flow_upward_sub {ORB_ID(sensor_optical_flow), 1};
-	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_upward_vel_pub{ORB_ID(estimator_optical_flow_upward_vel)};
+#if defined(CONFIG_EKF2_OPTICAL_FLOW) // base
+	uORB::Subscription _sensor_optical_flow_base_sub {ORB_ID(sensor_optical_flow), 1};
+	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_base_vel_pub{ORB_ID(estimator_optical_flow_base_vel)};
 
-	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_upward_pub{ORB_ID(estimator_aid_src_optical_flow_upward)};
-	hrt_abstime _status_optical_flow_upward_pub_last{0};
-	hrt_abstime _optical_flow_upward_vel_pub_last{0};
+	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_base_pub{ORB_ID(estimator_aid_src_optical_flow_base)};
+	hrt_abstime _status_optical_flow_base_pub_last{0};
+	hrt_abstime _optical_flow_base_vel_pub_last{0};
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW) // sideways
@@ -697,6 +697,7 @@ private:
 		_param_ekf2_of_pos_y, ///< Y position of optical flow sensor focal point in body frame (m)
 		(ParamExtFloat<px4::params::EKF2_OF_POS_Z>)
 		_param_ekf2_of_pos_z, ///< Z position of optical flow sensor focal point in body frame (m)
+		(ParamInt<px4::params::EKF2_OF_INT>) _param_ekf2_of_int,
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_DRAG_FUSION)

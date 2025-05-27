@@ -101,3 +101,13 @@ parameters:
       default: 0.0
       unit: m
       decimal: 3
+    EKF2_OF_INT:
+      description:
+        short: Optical Flow instances
+        long: Number of optical Flow instances.
+      type: int32
+      reboot_required: true
+      default: 0
+      min: 0
+      max: 10
+

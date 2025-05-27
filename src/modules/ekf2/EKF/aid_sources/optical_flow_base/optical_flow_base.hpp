@@ -1,4 +1,3 @@
-
 /****************************************************************************
  *
  *   Copyright (c) 2023-2025 PX4 Development Team. All rights reserved.
@@ -32,15 +31,15 @@
  *
  ****************************************************************************/
 
- #ifndef EKF_OPTICAL_FLOW_SIDEWAYS_HPP
- #define EKF_OPTICAL_FLOW_SIDEWAYS_HPP
+ #ifndef EKF_OPTICAL_FLOW_BASE_HPP
+ #define EKF_OPTICAL_FLOW_BASE_HPP
 
  #include "../../common.h"
  #include "../../RingBuffer.h"
 
  #include <lib/mathlib/math/WelfordMeanVector.hpp>
 
- #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
+ #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
  #if defined(MODULE_NAME)
  # include <px4_platform_common/module_params.h>
@@ -54,45 +53,165 @@
 
  class Ekf;
 
- class OpticalFlowSideways : public ModuleParams
+ class OpticalFlowBase : public ModuleParams
  {
  public:
-	// Define sensor mounting type
-	enum class MountingType {
-		FORWARD,  // Facing forward (default)
-		SIDEWAYS, // Facing sideways (right)
-		UPWARD,   // Facing upward
-		DOWNWARD, // Facing downward
-		CUSTOM    // Custom orientation defined by parameters
-	};
+	 // Define sensor mounting type
+	 enum class MountingType {
+		 FORWARD,  // Facing forward (default)
+		 SIDEWAYS, // Facing sideways (right)
+		 UPWARD,   // Facing upward
+		 DOWNWARD, // Facing downward
+		 CUSTOM    // Custom orientation defined by parameters
+	 };
 
-	OpticalFlowSideways(int flowInstance =0, MountingType type = MountingType::CUSTOM) :
+	 OpticalFlowBase(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),
 		_mounting_type(type),
 		kFlowInstance(flowInstance),
-		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), kFlowInstance),
-    		_distance_sensor_sub(ORB_ID(distance_sensor), kFlowInstance)
-	{
-		_estimator_aid_src_optical_flow_sideways_pub.advertise();
-	}
+		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), 0),
+    		_distance_sensor_sub(ORB_ID(distance_sensor), 0)
+	 {
+		// Initialize parameter handles dynamically
+		char param_name[64];
 
-	~OpticalFlowSideways() = default;
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_CTRL", flowInstance);
+		_param_ekf2_of_ctrl = param_find(param_name);
 
-	void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_DELAY", flowInstance);
+		_param_ekf2_of_delay = param_find(param_name);
 
-	void updateParameters()
-	{
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_NOISE", flowInstance);
+		_param_ekf2_of_noise = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_GATE", flowInstance);
+		_param_ekf2_of_gate = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_ROLL", flowInstance);
+		_param_ekf2_of_roll = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_PITCH", flowInstance);
+		_param_ekf2_of_pitch = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_YAW", flowInstance);
+		_param_ekf2_of_yaw = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_POS_X", flowInstance);
+		_param_ekf2_of_pos_x = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_POS_Y", flowInstance);
+		_param_ekf2_of_pos_y = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_POS_Z", flowInstance);
+		_param_ekf2_of_pos_z = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_MODE", flowInstance);
+		_param_ekf2_of_mode = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_VAR_P", flowInstance);
+		_param_ekf2_obs_var_p = param_find(param_name);
+
+		_estimator_aid_src_optical_flow_base_pub.advertise();
+	 }
+
+	 ~OpticalFlowBase() = default;
+
+	 void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
+
+	 void updateParameters()
+	 {
+		// Get parameter values using handles
+		int32_t tmp_int;
+		float tmp_float;
+
+		if (param_get(_param_ekf2_of_ctrl, &tmp_int) == PX4_OK) {
+			_ekf2_of_ctrl = (tmp_int != 0);
+		}
+
+		if (param_get(_param_ekf2_of_delay, &tmp_float) == PX4_OK) {
+			_ekf2_of_delay = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_noise, &tmp_float) == PX4_OK) {
+			_ekf2_of_noise = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_gate, &tmp_float) == PX4_OK) {
+			_ekf2_of_gate = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_roll, &tmp_float) == PX4_OK) {
+			_ekf2_of_roll = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pitch, &tmp_float) == PX4_OK) {
+			_ekf2_of_pitch = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_yaw, &tmp_float) == PX4_OK) {
+			_ekf2_of_yaw = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pos_x, &tmp_float) == PX4_OK) {
+			_ekf2_of_pos_x = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pos_y, &tmp_float) == PX4_OK) {
+			_ekf2_of_pos_y = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_pos_z, &tmp_float) == PX4_OK) {
+			_ekf2_of_pos_z = tmp_float;
+		}
+
+		if (param_get(_param_ekf2_of_mode, &tmp_int) == PX4_OK) {
+			_ekf2_of_mode = tmp_int;
+		}
+
+		if (param_get(_param_ekf2_obs_var_p, &tmp_float) == PX4_OK) {
+			_ekf2_obs_var_p = tmp_float;
+		}
 		updateParams();
-	}
+	 }
 
-	const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
-	const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
+	 const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
+	 const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
 
-	float test_ratio_filtered() const { return _test_ratio_filtered; }
+	 float test_ratio_filtered() const { return _test_ratio_filtered; }
 
-	void setMountingType(MountingType type) { _mounting_type = type; }
+	 void setMountingType(MountingType type) { _mounting_type = type; }
+
+	 static constexpr uint8_t getInstance() { return 0; }
 
  private:
+
+	bool _ekf2_of_ctrl;
+	float _ekf2_of_delay;
+	float _ekf2_of_noise;
+	float _ekf2_of_gate;
+	float _ekf2_of_roll;
+	float _ekf2_of_pitch;
+	float _ekf2_of_yaw;
+	float _ekf2_of_pos_x;
+	float _ekf2_of_pos_y;
+	float _ekf2_of_pos_z;
+	int _ekf2_of_mode;
+	float _ekf2_obs_var_p;
+
+	// Parameter handles for dynamic parameters
+	param_t _param_ekf2_of_ctrl;
+	param_t _param_ekf2_of_delay;
+	param_t _param_ekf2_of_noise;
+	param_t _param_ekf2_of_gate;
+	param_t _param_ekf2_of_roll;
+	param_t _param_ekf2_of_pitch;
+	param_t _param_ekf2_of_yaw;
+	param_t _param_ekf2_of_pos_x;
+	param_t _param_ekf2_of_pos_y;
+	param_t _param_ekf2_of_pos_z;
+	param_t _param_ekf2_of_mode;
+	param_t _param_ekf2_obs_var_p;
+
 	bool isTimedOut(uint64_t last_sensor_timestamp, uint64_t time_delayed_us, uint64_t timeout_period) const
 	{
 		return (last_sensor_timestamp == 0) || (last_sensor_timestamp + timeout_period < time_delayed_us);
@@ -129,7 +248,7 @@
 		uint8_t     flow_quality{};   ///< quality indicator between 0 and 255
 	};
 
-	estimator_aid_source3d_s _aid_src_optical_flow_sideways{};
+	estimator_aid_source3d_s _aid_src_optical_flow_base{};
 	RingBuffer<OpticalFlowSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
 	uint64_t _time_last_buffer_push{0};
 
@@ -145,7 +264,6 @@
 	float _test_ratio_filtered{INFINITY};
 
 	matrix::Vector3f _flow_gyro_bias{};
-
 	matrix::Vector2f _vel_ne_innovation{};
 	matrix::Vector2f _vel_ne_test_ratio{};
 
@@ -165,32 +283,17 @@
 	};
 	reset_counters_s _reset_counters{};
 
-	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_sideways_pub{ORB_ID(estimator_aid_src_optical_flow_sideways)};
-	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_sideways_vel_pub{ORB_ID(estimator_optical_flow_sideways_vel)};
+	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_base_pub{ORB_ID(estimator_aid_src_optical_flow_base)};
+	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_base_vel_pub{ORB_ID(estimator_optical_flow_base_vel)};
 
 	const uint8_t kFlowInstance = 0;
 
 	uORB::Subscription _sensor_optical_flow_sub;
 	uORB::Subscription _distance_sensor_sub;
 
-	DEFINE_PARAMETERS(
-		(ParamBool<px4::params::EKF2_OFS_CTRL>) _param_ekf2_of_ctrl,
-		(ParamFloat<px4::params::EKF2_OFS_DELAY>) _param_ekf2_of_delay,
-		(ParamFloat<px4::params::EKF2_OFS_NOISE>) _param_ekf2_of_noise,
-		(ParamFloat<px4::params::EKF2_OFS_GATE>) _param_ekf2_of_gate,
-		(ParamFloat<px4::params::EKF2_OFS_ROLL>) _param_ekf2_of_roll,
-		(ParamFloat<px4::params::EKF2_OFS_PITCH>) _param_ekf2_of_pitch,
-		(ParamFloat<px4::params::EKF2_OFS_YAW>) _param_ekf2_of_yaw,
-		(ParamFloat<px4::params::EKF2_OFS_POS_X>) _param_ekf2_of_pos_x,
-		(ParamFloat<px4::params::EKF2_OFS_POS_Y>) _param_ekf2_of_pos_y,
-		(ParamFloat<px4::params::EKF2_OFS_POS_Z>) _param_ekf2_of_pos_z,
-		(ParamInt<px4::params::EKF2_OFS_MODE>) _param_ekf2_of_mode,
-		(ParamFloat<px4::params::EKF2_OFS_VAR_P>) _param_ekf2_obs_var_p
-	)
-
  #endif // MODULE_NAME
  };
 
- #endif // CONFIG_EKF2_OPTICAL_FLOW_Sideways
+ #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
- #endif // !EKF_OPTICAL_FLOW_Sideways_HPP
+ #endif // !EKF_OPTICAL_FLOW_BASE_HPP
