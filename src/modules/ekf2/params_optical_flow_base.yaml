@@ -4,7 +4,7 @@ module_name: ekf2
 parameters:
 - group: EKF2
   definitions:
-    EKF2_OF${i}_CTRL:
+    EKF2_OFV${i}_CTRL:
       description:
         short: Optical flow upward (OFU) sensor aiding
       type: boolean
@@ -12,7 +12,7 @@ parameters:
       min: 0
       max: 3
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_DELAY:
+    EKF2_OFV${i}_DELAY:
       description:
         short: Optical flow upward estimator delay relative to IMU measurements
       type: float
@@ -23,7 +23,7 @@ parameters:
       reboot_required: true
       decimal: 1
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_NOISE:
+    EKF2_OFV${i}_NOISE:
       description:
         short: Measurement noise for aux global position measurements
         long:  Used to lower bound or replace the uncertainty included in the message
@@ -33,7 +33,7 @@ parameters:
       unit: m/s
       decimal: 2
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_GATE:
+    EKF2_OFV${i}_GATE:
       description:
         short: Gate size for aux global position fusion
         long: Sets the number of standard deviations used by the innovation consistency
@@ -44,7 +44,7 @@ parameters:
       unit: SD
       decimal: 1
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_ROLL:
+    EKF2_OFV${i}_ROLL:
       description:
         short: Set Roll angle of optical flow
         long: Set the Roll angle of the optical Flow sensor to be used in the Optical Flow Upward object
@@ -54,7 +54,7 @@ parameters:
       units: degrees
       decimal: 1
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_PITCH:
+    EKF2_OFV${i}_PITCH:
       description:
         short: Set Pitch angle of optical flow
         long: Set the Pitch angle of the optical Flow sensor to be used in the Optical Flow Upward object
@@ -64,7 +64,7 @@ parameters:
       units: degrees
       decimal: 1
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_YAW:
+    EKF2_OFV${i}_YAW:
       description:
         short: Set Yaw angle of optical flow
         long: Set the Yaw angle of the optical Flow sensor to be used in the Optical Flow Upward object
@@ -74,7 +74,7 @@ parameters:
       units: degrees
       decimal: 1
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_POS_X:
+    EKF2_OFV${i}_POS_X:
       description:
           short: Position Offset X
           long: Set the X offset of the optical Flow sensor to be used in the Optical Flow Upward object
@@ -84,7 +84,7 @@ parameters:
       units: meters
       decimal: 5
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_POS_Y:
+    EKF2_OFV${i}_POS_Y:
       description:
           short: Position Offset Y
           long: Set the Y offset of the optical Flow sensor to be used in the Optical Flow Upward object
@@ -94,7 +94,7 @@ parameters:
       units: meters
       decimal: 5
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_POS_Z:
+    EKF2_OFV${i}_POS_Z:
       description:
         short: Position Offset Z
         long: Set the Z offset of the optical Flow sensor to be used in the Optical Flow Upward object
@@ -104,7 +104,7 @@ parameters:
       units: meters
       decimal: 5
       num_instances: *max_num_sensor_instances
-    EKF2_OF${i}_MODE:
+    EKF2_OFV${i}_MODE:
       description:
         short: Direction the Optical Flow Sensor is facing
         long: |
@@ -116,7 +116,7 @@ parameters:
         2: Upward
         4: Custom
       num_instances: *max_num_sensor_instances
-    EKF2_OF_VAR_P:
+    EKF2_OFV_VAR_P:
       description:
         short: Propotianlity value for variance
         long: |

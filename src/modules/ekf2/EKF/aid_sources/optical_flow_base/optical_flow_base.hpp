@@ -75,40 +75,40 @@
 		// Initialize parameter handles dynamically
 		char param_name[64];
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_CTRL", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_CTRL", flowInstance);
 		_param_ekf2_of_ctrl = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_DELAY", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_DELAY", flowInstance);
 		_param_ekf2_of_delay = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_NOISE", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_NOISE", flowInstance);
 		_param_ekf2_of_noise = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_GATE", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_GATE", flowInstance);
 		_param_ekf2_of_gate = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_ROLL", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_ROLL", flowInstance);
 		_param_ekf2_of_roll = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_PITCH", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_PITCH", flowInstance);
 		_param_ekf2_of_pitch = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_YAW", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_YAW", flowInstance);
 		_param_ekf2_of_yaw = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_POS_X", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_POS_X", flowInstance);
 		_param_ekf2_of_pos_x = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_POS_Y", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_POS_Y", flowInstance);
 		_param_ekf2_of_pos_y = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_POS_Z", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_POS_Z", flowInstance);
 		_param_ekf2_of_pos_z = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_MODE", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_MODE", flowInstance);
 		_param_ekf2_of_mode = param_find(param_name);
 
-		snprintf(param_name, sizeof(param_name), "EKF2_OF%d_VAR_P", flowInstance);
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_VAR_P", flowInstance);
 		_param_ekf2_obs_var_p = param_find(param_name);
 
 		_estimator_aid_src_optical_flow_base_pub.advertise();
