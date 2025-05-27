@@ -51,7 +51,6 @@ public:
 
 	void set_device_id(const uint32_t device_id) {  _distance_sensor_pub.get().device_id = device_id; };
 	void set_device_type(const uint8_t device_type);
-	void set_device_address() { _distance_sensor_pub.get().node_id = _dev_address; };
 
 	void set_fov(const float fov) { set_hfov(fov); set_vfov(fov); }
 	void set_hfov(const float fov) { _distance_sensor_pub.get().h_fov = fov; }
@@ -62,9 +61,6 @@ public:
 
 	void set_orientation(const uint8_t device_orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING);
 
-	// Set orientation using roll, pitch, yaw angles (in radians)
-	void set_orientation_rpy(const float roll, const float pitch, const float yaw);
-
 	void set_mode(const uint8_t mode) { _distance_sensor_pub.get().mode = mode; }
 
 	void update(const hrt_abstime &timestamp_sample, const float distance, const int8_t quality = -1);
@@ -72,8 +68,6 @@ public:
 	int get_instance() { return _distance_sensor_pub.get_instance(); };
 
 private:
-	// Convert roll, pitch, yaw to quaternion
-	void rpy_to_quaternion(const float roll, const float pitch, const float yaw, float quaternion[4]);
 
 	uORB::PublicationMultiData<distance_sensor_s> _distance_sensor_pub{ORB_ID(distance_sensor)};
 	uint8_t _dev_address{0};

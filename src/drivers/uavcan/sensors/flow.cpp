@@ -71,7 +71,6 @@ void UavcanFlowBridge::flow_sub_cb(const uavcan::ReceivedDataStructure<com::hex:
 	_orb_topic = ORB_ID(sensor_optical_flow);
 
 	flow.device_id = device_id.devid;
-	flow.node_id = device_id.devid_s.address;
 
 	flow.pixel_flow[0] = msg.flow_integral[0];
 	flow.pixel_flow[1] = msg.flow_integral[1];
@@ -95,7 +94,6 @@ void UavcanFlowBridge::flow_sub_cb(const uavcan::ReceivedDataStructure<com::hex:
 	flow.max_flow_rate = NAN;
 	flow.min_ground_distance = NAN;
 	flow.max_ground_distance = NAN;
-	// flow.node_id = msg.getSrcNodeID().get();
 
 	flow.timestamp = hrt_absolute_time();
 
