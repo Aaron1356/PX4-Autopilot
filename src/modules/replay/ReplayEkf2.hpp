@@ -89,11 +89,7 @@ private:
 	uint16_t _airspeed_msg_id = msg_id_invalid;
 	uint16_t _airspeed_validated_msg_id = msg_id_invalid;
 	uint16_t _distance_sensor_msg_id = msg_id_invalid;
-	uint16_t _distance_sensor_upward_msg_id = msg_id_invalid;
-	uint16_t _distance_sensor_sideways_msg_id = msg_id_invalid;
 	uint16_t _optical_flow_msg_id = msg_id_invalid;
-	uint16_t _optical_flow_base_msg_id = msg_id_invalid;
-	uint16_t _optical_flow_sideways_msg_id = msg_id_invalid;
 	uint16_t _sensor_combined_msg_id = msg_id_invalid;
 	uint16_t _vehicle_air_data_msg_id = msg_id_invalid;
 	uint16_t _vehicle_magnetometer_msg_id = msg_id_invalid;

@@ -155,15 +155,11 @@ ReplayEkf2::publishEkf2Topics(sensor_combined_s &sensor_combined, std::ifstream 
 {
 	findTimestampAndPublish(sensor_combined.timestamp, _airspeed_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _distance_sensor_msg_id, replay_file);
-	findTimestampAndPublish(sensor_combined.timestamp, _distance_sensor_base_msg_id, replay_file);
-	findTimestampAndPublish(sensor_combined.timestamp, _distance_sensor_sideways_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _optical_flow_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _vehicle_air_data_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _vehicle_magnetometer_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _vehicle_visual_odometry_msg_id, replay_file);
 	findTimestampAndPublish(sensor_combined.timestamp, _aux_global_position_msg_id, replay_file);
-	findTimestampAndPublish(sensor_combined.timestamp, _optical_flow_base_msg_id, replay_file);
-	findTimestampAndPublish(sensor_combined.timestamp, _optical_flow_sideways_msg_id, replay_file);
 
 	// sensor_combined: publish last because ekf2 is polling on this
 	if (_last_sensor_combined_timestamp > 0) {
@@ -202,10 +198,6 @@ ReplayEkf2::publishEkf2Topics(const ekf2_timestamps_s &ekf2_timestamps, std::ifs
 	handle_sensor_publication(0, _vehicle_local_position_groundtruth_msg_id);
 	handle_sensor_publication(0, _vehicle_global_position_groundtruth_msg_id);
 	handle_sensor_publication(0, _vehicle_attitude_groundtruth_msg_id);
-	handle_sensor_publication(0, _distance_sensor_base_msg_id);
-	handle_sensor_publication(0, _distance_sensor_sideways_msg_id);
-	handle_sensor_publication(0, _optical_flow_base_msg_id);
-	handle_sensor_publication(0, _optical_flow_sideways_msg_id);
 
 	// sensor_combined: publish last because ekf2 is polling on this
 	if (!findTimestampAndPublish(ekf2_timestamps.timestamp, _sensor_combined_msg_id, replay_file)) {
@@ -299,10 +291,6 @@ ReplayEkf2::onExitMainLoop()
 	print_sensor_statistics(_vehicle_magnetometer_msg_id, "vehicle_magnetometer");
 	print_sensor_statistics(_vehicle_visual_odometry_msg_id, "vehicle_visual_odometry");
 	print_sensor_statistics(_aux_global_position_msg_id, "aux_global_position");
-	print_sensor_statistics(_distance_sensor_base_msg_id, "distance_sensor_base");
-	print_sensor_statistics(_distance_sensor_sideways_msg_id, "distance_sensor_sideways");
-	print_sensor_statistics(_optical_flow_base_msg_id, "optical_flow_base");
-	print_sensor_statistics(_optical_flow_sideways_msg_id, "optical_flow_sideways");
 }
 
 } // namespace px4
