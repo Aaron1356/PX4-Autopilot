@@ -428,7 +428,7 @@ public:
 
 	friend class AuxGlobalPosition;
 	friend class OpticalFlowBase;
-	friend class OpticalFlowSideways;
+	// friend class OpticalFlowSideways;
 
 private:
 
@@ -1158,19 +1158,10 @@ private:
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
-	OpticalFlowBase* create_flow_list(int num_instances)
-	{
-		if(num_instances == 0){
-			return nullptr;
-		}
-		OpticalFlowBase *flow_inst = static_cast<OpticalFlowBase*>(operator new[](num_instances * sizeof(OpticalFlowBase)));
-		for(int i=0; i< num_instances; i++){
-			new (&flow_inst[i]) OpticalFlowBase(i);
-		}
-		return flow_inst;
-	}
-
-	OpticalFlowBase* flow_instances = create_flow_list(0);
+	OpticalFlowBase *_optical_flow_base {new OpticalFlowBase(0)};
+	// int num_instances = 0;
+	// OpticalFlowBase *flow_instances = static_cast<OpticalFlowBase*>(operator new[](num_instances * sizeof(OpticalFlowBase)));
+	// void create_flow_list(int num);
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
