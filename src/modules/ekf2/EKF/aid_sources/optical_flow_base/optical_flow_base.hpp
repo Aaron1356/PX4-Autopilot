@@ -49,6 +49,7 @@
  # include <uORB/topics/estimator_aid_source3d.h>
  # include <uORB/topics/sensor_optical_flow.h>
  # include <uORB/topics/vehicle_optical_flow_vel.h>
+//  #include <new>
  #endif // MODULE_NAME
 
  class Ekf;
@@ -69,8 +70,8 @@
 		ModuleParams(nullptr),
 		_mounting_type(type),
 		kFlowInstance(flowInstance),
-		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), 0),
-    		_distance_sensor_sub(ORB_ID(distance_sensor), 0)
+		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), kFlowInstance),
+    		_distance_sensor_sub(ORB_ID(distance_sensor), kFlowInstance)
 	 {
 		// Initialize parameter handles dynamically
 		char param_name[64];

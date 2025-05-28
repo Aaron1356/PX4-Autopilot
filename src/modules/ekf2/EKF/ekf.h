@@ -70,37 +70,13 @@
 # include "aid_sources/optical_flow_base/optical_flow_base.hpp"
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)
-# include "aid_sources/optical_flow_sideways/optical_flow_sideways.hpp"
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
+// #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)
+// # include "aid_sources/optical_flow_sideways/optical_flow_sideways.hpp"
+// #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
+#include <new>
 
 enum class Likelihood { LOW, MEDIUM, HIGH };
 class ExternalVisionVel;
-// class OpticalFlowBase;
-
-// typedef struct {
-// 		OpticalFlowBase* instance;
-// 		int id;
-// 		bool active;
-// 	} OpticalFlowComponent;
-
-// OpticalFlowComponent* create_optical_flow_array(int count) {
-// 	OpticalFlowComponent* components = new OpticalFlowComponent[count];
-
-// 	for (int i = 0; i < count; i++) {
-// 		#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-// 			components[i].instance = new OpticalFlowBase(i); // or whatever param you need
-// 			components[i].id = i;
-// 			components[i].active = true;
-// 		#else
-// 			components[i].instance = NULL;
-// 			components[i].id = i;
-// 			components[i].active = false;
-// 		#endif
-// 	}
-
-// 	return components;
-// }
 
 class Ekf final : public EstimatorInterface
 {
@@ -665,6 +641,8 @@ private:
 	uint64_t _time_good_vert_accel{0};	///< last time a good vertical accel was detected (uSec)
 	uint16_t _clip_counter[3];		///< counter per axis that increments when clipping ad decrements when not
 
+	// const int flow_instance = _params.flow_num_instances;
+
 	// initialise filter states of both the delayed ekf and the real time complementary filter
 	bool initialiseFilter(void);
 
@@ -1179,13 +1157,26 @@ private:
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-	OpticalFlowBase *_optical_flow_base {new OpticalFlowBase(1)};
-	// OpticalFlowComponent* flow_instances = create_optical_flow_array(_params.flow_num_instances);
+
+	OpticalFlowBase* create_flow_list(int num_instances)
+	{
+		if(num_instances == 0){
+			return nullptr;
+		}
+		OpticalFlowBase *flow_inst = static_cast<OpticalFlowBase*>(operator new[](num_instances * sizeof(OpticalFlowBase)));
+		for(int i=0; i< num_instances; i++){
+			new (&flow_inst[i]) OpticalFlowBase(i);
+		}
+		return flow_inst;
+	}
+
+	OpticalFlowBase* flow_instances = create_flow_list(0);
+
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-	OpticalFlowSideways *_optical_flow_sideways {new OpticalFlowSideways(0)};
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
+// #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
+// 	OpticalFlowSideways *_optical_flow_sideways {new OpticalFlowSideways(0)};
+// #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 };
 
 #endif // !EKF_EKF_H
