@@ -392,16 +392,16 @@ void Ekf::updateParameters()
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-	_optical_flow_base->updateParameters();
-	// for(int i =0; i < _params.flow_num_instances; i++){
-	// 	flow_instances[i].instance->updateParameters();
-	// }
+	// _optical_flow_base->updateParameters();
+	for(int i =0; i < 2; i++){
+		flow_instances[i].updateParameters();
+	}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-	_optical_flow_sideways->updateParameters();
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
+// #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
+// 	_optical_flow_sideways->updateParameters();
+// #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 }
 
 template<typename T>
