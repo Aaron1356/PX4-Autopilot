@@ -50,6 +50,15 @@ bool Ekf::init(uint64_t timestamp)
 		reset();
 	}
 	ECL_INFO("Flow Instances: %d", (int)_params.flow_num_instances);
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+	// Dynamically Create Optical Flow Instances
+
+	// flow_instances[0] = new OpticalFlowBase(0);
+	for(int i=0; i < 10; i++){
+		flow_instances[i] = new OpticalFlowBase(i);
+	}
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 	return _initialised;
 }
 
@@ -370,16 +379,6 @@ bool Ekf::resetGlobalPosToExternalObservation(const double latitude, const doubl
 	return true;
 }
 
-// #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-// void Ekf::create_flow_list(int num)
-// 	{
-// 		// new (&flow_instances[0])OpticalFlowBase(0);
-// 		// for(int i=0; i < num; i++){
-// 		// 	new (&flow_instances[i]) OpticalFlowBase(i);
-// 		// }
-// 	}
-// #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
-
 void Ekf::updateParameters()
 {
 	_params.gyro_noise = math::constrain(_params.gyro_noise, 0.f, 1.f);
@@ -402,14 +401,9 @@ void Ekf::updateParameters()
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-	// _optical_flow_base->updateParameters();
-	flow_instances[0]->updateParameters();
-	flow_instances[1]->updateParameters();
-	flow_instances[2]->updateParameters();
-	flow_instances[3]->updateParameters();
-	// for(int i =0; i < 2; i++){
-	// 	flow_instances[i].updateParameters();
-	// }
+	for(int i =0; i < 10; i++){
+		flow_instances[i]->updateParameters();
+	}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 }

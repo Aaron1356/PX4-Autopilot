@@ -1155,7 +1155,21 @@ private:
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
-	OpticalFlowBase *flow_instances[4] = {new OpticalFlowBase(0), new OpticalFlowBase(1), new OpticalFlowBase(2), new OpticalFlowBase(3)};
+	// This section of Code Works Fine
+	// OpticalFlowBase *flow_instances[10] = {new OpticalFlowBase(0),
+	// 					new OpticalFlowBase(1),
+	// 					new OpticalFlowBase(2),
+	// 					new OpticalFlowBase(3),
+	// 					new OpticalFlowBase(4),
+	// 					new OpticalFlowBase(5),
+	// 					new OpticalFlowBase(6),
+	// 					new OpticalFlowBase(7),
+	// 					new OpticalFlowBase(8),
+	// 					new OpticalFlowBase(9)};
+	// OpticalFlowBase *flow_instances[10];
+
+	// Allocating Space for the Optical Flow Instances.
+	OpticalFlowBase *flow_instances[10] = {nullptr};
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 };
