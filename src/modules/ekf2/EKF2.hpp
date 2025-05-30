@@ -358,15 +358,6 @@ private:
 	hrt_abstime _optical_flow_base_vel_pub_last{0};
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW) // sideways
-	uORB::Subscription _sensor_optical_flow_sideways_sub {ORB_ID(sensor_optical_flow), 1};
-	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_sideways_vel_pub{ORB_ID(estimator_optical_flow_sideways_vel)};
-
-	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_sideways_pub{ORB_ID(estimator_aid_src_optical_flow_sideways)};
-	hrt_abstime _status_optical_flow_sideways_pub_last{0};
-	hrt_abstime _optical_flow_sideways_vel_pub_last{0};
-#endif // CONFIG_EKF2_OPTICAL_FLOW
-
 #if defined(CONFIG_EKF2_BAROMETER)
 	uint8_t _baro_calibration_count {0};
 	uint32_t _device_id_baro{0};

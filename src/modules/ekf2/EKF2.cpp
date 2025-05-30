@@ -369,11 +369,6 @@ void EKF2::AdvertiseTopics()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW) // sideways
-		_estimator_optical_flow_sideways_vel_pub.advertise();
-		_estimator_aid_src_optical_flow_sideways_pub.advertise();
-#endif // CONFIG_EKF2_OPTICAL_FLOW
-
 #if defined(CONFIG_EKF2_RANGE_FINDER)
 
 		// RNG advertise
@@ -849,8 +844,8 @@ void EKF2::Run()
 #if defined(CONFIG_EKF2_MAGNETOMETER)
 			UpdateMagCalibration(now);
 #endif // CONFIG_EKF2_MAGNETOMETER
+			_ekf.create_flow_instances(_params->flow_num_instances);
 		}
-
 		// publish ekf2_timestamps
 		_ekf2_timestamps_pub.publish(ekf2_timestamps);
 	}

@@ -55,9 +55,9 @@ bool Ekf::init(uint64_t timestamp)
 	// Dynamically Create Optical Flow Instances
 
 	// flow_instances[0] = new OpticalFlowBase(0);
-	for(int i=0; i < 10; i++){
-		flow_instances[i] = new OpticalFlowBase(i);
-	}
+	// for(int i=0; i < 10; i++){
+	// 	flow_instances[i] = new OpticalFlowBase(i);
+	// }
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 	return _initialised;
 }
@@ -185,6 +185,18 @@ bool Ekf::update()
 
 	return false;
 }
+
+// #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+void Ekf::create_flow_instances(int num){
+	printf("Flow Instance: %d", num);
+}
+	// Dynamically Create Optical Flow Instances
+
+	// flow_instances[0] = new OpticalFlowBase(0);
+	// for(int i=0; i < 10; i++){
+	// 	flow_instances[i] = new OpticalFlowBase(i);
+	// }
+// #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 bool Ekf::initialiseFilter()
 {
