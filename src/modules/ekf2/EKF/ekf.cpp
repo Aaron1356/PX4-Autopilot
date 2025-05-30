@@ -49,9 +49,7 @@ bool Ekf::init(uint64_t timestamp)
 		_initialised = initialise_interface(timestamp);
 		reset();
 	}
-// #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-// 	create_flow_list(this->num_instances);
-// #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+	ECL_INFO("Flow Instances: %d", (int)_params.flow_num_instances);
 	return _initialised;
 }
 
@@ -375,9 +373,10 @@ bool Ekf::resetGlobalPosToExternalObservation(const double latitude, const doubl
 // #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 // void Ekf::create_flow_list(int num)
 // 	{
-// 		for(int i=0; i < num; i++){
-// 			new (&flow_instances[i]) OpticalFlowBase(i);
-// 		}
+// 		// new (&flow_instances[0])OpticalFlowBase(0);
+// 		// for(int i=0; i < num; i++){
+// 		// 	new (&flow_instances[i]) OpticalFlowBase(i);
+// 		// }
 // 	}
 // #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
@@ -403,16 +402,16 @@ void Ekf::updateParameters()
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-	_optical_flow_base->updateParameters();
+	// _optical_flow_base->updateParameters();
+	flow_instances[0]->updateParameters();
+	flow_instances[1]->updateParameters();
+	flow_instances[2]->updateParameters();
+	flow_instances[3]->updateParameters();
 	// for(int i =0; i < 2; i++){
 	// 	flow_instances[i].updateParameters();
 	// }
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
-
-// #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-// 	_optical_flow_sideways->updateParameters();
-// #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 }
 
 template<typename T>

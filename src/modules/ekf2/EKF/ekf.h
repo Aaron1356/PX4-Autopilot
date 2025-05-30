@@ -70,10 +70,7 @@
 # include "aid_sources/optical_flow_base/optical_flow_base.hpp"
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-// #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)
-// # include "aid_sources/optical_flow_sideways/optical_flow_sideways.hpp"
-// #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
-#include <new>
+// #include <new>
 
 enum class Likelihood { LOW, MEDIUM, HIGH };
 class ExternalVisionVel;
@@ -1158,16 +1155,9 @@ private:
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
-	OpticalFlowBase *_optical_flow_base {new OpticalFlowBase(0)};
-	// int num_instances = 0;
-	// OpticalFlowBase *flow_instances = static_cast<OpticalFlowBase*>(operator new[](num_instances * sizeof(OpticalFlowBase)));
-	// void create_flow_list(int num);
+	OpticalFlowBase *flow_instances[4] = {new OpticalFlowBase(0), new OpticalFlowBase(1), new OpticalFlowBase(2), new OpticalFlowBase(3)};
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
-
-// #if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-// 	OpticalFlowSideways *_optical_flow_sideways {new OpticalFlowSideways(0)};
-// #endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 };
 
 #endif // !EKF_EKF_H
