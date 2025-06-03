@@ -144,8 +144,10 @@ void Ekf::controlFusionModes(const imuSample &imu_delayed)
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 	// _optical_flow_base->update(*this, imu_delayed);
-	for (int i =0; i < 10; i++ ){
-		flow_instances[i]->update(*this, imu_delayed);
+	for (auto& flow_instance: _flow_instances){
+		if(flow_instance != nullptr){
+			flow_instance->update(*this, imu_delayed);
+		}
 	}
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 

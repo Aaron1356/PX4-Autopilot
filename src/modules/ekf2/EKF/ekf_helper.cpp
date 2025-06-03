@@ -300,8 +300,11 @@ void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 		} else if (_control_status.flags.optical_flow_base) {
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 			// vel_err_conservative = _optical_flow_base->innovation().norm();
-			for(int i=0; i< 10; i++){
-				vel_err_conservative = math::max(vel_err_conservative, flow_instances[i]->innovation().norm());
+			for (auto& flow_instance : _flow_instances) {
+				if(flow_instance != nullptr){
+					vel_err_conservative = math::max(vel_err_conservative, flow_instance->innovation().norm());
+
+				}
 			}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
@@ -489,8 +492,10 @@ float Ekf::getHorizontalVelocityInnovationTestRatio() const
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 
 	if (isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.optical_flow_base)) {
-		for(int i=0; i < 10; i++){
-			test_ratio = math::max(test_ratio, fabsf(flow_instances[i]->test_ratio_filtered()));
+		for (auto& flow_instance : _flow_instances) {
+			if(flow_instance != nullptr){
+				test_ratio = math::max(test_ratio, fabsf(flow_instance->test_ratio_filtered()));
+			}
 		}
 
 	}

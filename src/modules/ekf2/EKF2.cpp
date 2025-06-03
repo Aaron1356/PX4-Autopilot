@@ -449,6 +449,12 @@ void EKF2::Run()
 		return;
 	}
 
+
+// #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+// 	if(_ekf.)
+
+// #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+
 	// check for parameter updates
 	if (_parameter_update_sub.updated() || !_callback_registered) {
 		// clear update
@@ -844,7 +850,6 @@ void EKF2::Run()
 #if defined(CONFIG_EKF2_MAGNETOMETER)
 			UpdateMagCalibration(now);
 #endif // CONFIG_EKF2_MAGNETOMETER
-			_ekf.create_flow_instances(_params->flow_num_instances);
 		}
 		// publish ekf2_timestamps
 		_ekf2_timestamps_pub.publish(ekf2_timestamps);
@@ -2924,6 +2929,10 @@ int EKF2::task_spawn(int argc, char *argv[])
 			success = true;
 		}
 	}
+
+// #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+	// _ekf.create_flow_instances(_params.flow_num_instances);
+// #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 	return success ? PX4_OK : PX4_ERROR;
 }
