@@ -56,7 +56,7 @@ bool Ekf::init(uint64_t timestamp)
 
 	for(int i=0; i < 10; i++){
 		if(_flow_instances[i] == nullptr){
-			_flow_instances[i] = new OpticalFlowBase(i);
+			_flow_instances[i] = OpticalFlowBase::create_instance(i);
 		}
 	}
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE

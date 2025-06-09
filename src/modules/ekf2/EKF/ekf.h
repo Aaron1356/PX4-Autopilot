@@ -423,15 +423,6 @@ public:
 
 	void updateParameters();
 
-	// void create_flow_instances(int num);
-
-	// bool isFlowInit(int num){
-	// 	if(flow_instances[num]== nullptr){
-	// 		return false;
-	// 	}
-	// 	return true;
-	// }
-
 	friend class AuxGlobalPosition;
 	friend class OpticalFlowBase;
 	// friend class OpticalFlowSideways;

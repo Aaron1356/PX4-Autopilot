@@ -120,13 +120,6 @@ depends on MODULES_EKF2
 	---help---
 		EKF2 optical flow base fusion support.
 
--- menuconfig EKF2_OPTICAL_FLOW_SIDEWAYS
--- depends on MODULES_EKF2
--- 	bool "optical flow sideways fusion support"
--- 	default y
--- 	---help---
--- 		EKF2 optical flow sideways fusion support.
-
 menuconfig EKF2_RANGE_FINDER
 depends on MODULES_EKF2
         bool "range finder fusion support"
