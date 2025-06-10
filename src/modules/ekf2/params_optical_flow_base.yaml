@@ -116,7 +116,7 @@ parameters:
         2: Upward
         4: Custom
       num_instances: *max_num_sensor_instances
-    EKF2_OFV_VAR_P:
+    EKF2_OFV${i}_VAR_P:
       description:
         short: Propotianlity value for variance
         long: |
@@ -124,6 +124,7 @@ parameters:
       type: float
       default: 100.0
       decimals: 2
+      num_instances: *max_num_sensor_instances
 
     EKF2_OFV${i}_OF_ID:
       description:

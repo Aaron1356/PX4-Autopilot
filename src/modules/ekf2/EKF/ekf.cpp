@@ -49,7 +49,6 @@ bool Ekf::init(uint64_t timestamp)
 		_initialised = initialise_interface(timestamp);
 		reset();
 	}
-	// ECL_INFO("Flow Instances: %d", (int)_params.flow_num_instances);
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
 	// Dynamically Create Optical Flow Instances

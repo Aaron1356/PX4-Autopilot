@@ -361,7 +361,7 @@ void EKF2::AdvertiseTopics()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW) // base
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) // base
 		if(_param_ekf2_of_int.get() < 0){
 			_estimator_optical_flow_base_vel_pub.advertise();
 			_estimator_aid_src_optical_flow_base_pub.advertise();
@@ -449,11 +449,6 @@ void EKF2::Run()
 		return;
 	}
 
-
-// #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-// 	if(_ekf.)
-
-// #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 	// check for parameter updates
 	if (_parameter_update_sub.updated() || !_callback_registered) {

@@ -69,13 +69,10 @@
 
 	 OpticalFlowBase(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),
-		_mounting_type(type),
-		kFlowInstance(flowInstance)
+		_mounting_type(type)
 	 {
 		// Initialize parameter handles dynamically
 		char param_name[17];
-
-		_estimator_aid_src_optical_flow_base_pub.advertise();
 
 		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_CTRL", flowInstance);
 		_param_ekf2_of_ctrl = param_find(param_name);
@@ -119,6 +116,9 @@
 		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_DS_ID", flowInstance);
 		_param_ekf2_ds_id = param_find(param_name);
 
+		_estimator_aid_src_optical_flow_base_pub.advertise();
+		printf("Starting Optical Flow instance: %d\n", flowInstance);
+		updateParameters();
 	 }
 
 	 ~OpticalFlowBase() = default;
@@ -198,12 +198,10 @@
 			uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
 			for(int i = 0; i < distance_sensor_subs.size(); i++){
 				if(distance_sensor_subs[i].copy(&topic)){
-					ECL_INFO("Checking Distance Sensor Topics");
-					printf("Distance Sensor Looking For: %d", _ekf2_ds_id);
+					printf("Distance Sensor Looking For: %d\n", _ekf2_ds_id);
 					if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
 					{
-						ECL_INFO("Matching Distance Sensor Topic found");
-						printf("Distance Sensor Looking at: %d", (int)((topic.device_id >> 8) & 0xFF));
+						printf("Distance Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
 						_distance_sensor_sub.ChangeInstance(i);
 						break;
 					}
@@ -218,12 +216,10 @@
 			uORB::SubscriptionMultiArray<sensor_optical_flow_s> optical_flow_subs{ORB_ID::sensor_optical_flow};
 			for(int i = 0; i < optical_flow_subs.size(); i++){
 				if(optical_flow_subs[i].copy(&topic)){
-					ECL_INFO("Checking Optical Flow Topics");
-					printf("Optical Flow Sensor Looking for: %d", _ekf2_of_id);
+					printf("Optical Flow Sensor Looking for: %d\n", _ekf2_of_id);
 					if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
 					{
-						ECL_INFO("Matching Node ID found");
-						printf("Optical Flow Sensor Looking at: %d", (int)((topic.device_id >> 8) & 0xFF));
+						printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
 						_sensor_optical_flow_sub.ChangeInstance(i);
 					}
 				}
@@ -351,8 +347,8 @@
 
 	const uint8_t kFlowInstance = 0;
 
-	uORB::Subscription _sensor_optical_flow_sub;
-	uORB::Subscription _distance_sensor_sub;
+	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow)};
+	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor)};
 
  #endif // MODULE_NAME
  };

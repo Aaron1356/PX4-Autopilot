@@ -349,7 +349,7 @@ private:
 	hrt_abstime _optical_flow_vel_pub_last{0};
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW) // base
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) // base
 	uORB::Subscription _sensor_optical_flow_base_sub {ORB_ID(sensor_optical_flow), 1};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_base_vel_pub{ORB_ID(estimator_optical_flow_base_vel)};
 
