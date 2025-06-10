@@ -70,8 +70,6 @@
 # include "aid_sources/optical_flow_base/optical_flow_base.hpp"
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-// #include <new>
-
 enum class Likelihood { LOW, MEDIUM, HIGH };
 class ExternalVisionVel;
 
@@ -425,7 +423,6 @@ public:
 
 	friend class AuxGlobalPosition;
 	friend class OpticalFlowBase;
-	// friend class OpticalFlowSideways;
 
 private:
 
@@ -637,8 +634,6 @@ private:
 	uint64_t _time_bad_vert_accel{0};	///< last time a bad vertical accel was detected (uSec)
 	uint64_t _time_good_vert_accel{0};	///< last time a good vertical accel was detected (uSec)
 	uint16_t _clip_counter[3];		///< counter per axis that increments when clipping ad decrements when not
-
-	// const int flow_instance = _params.flow_num_instances;
 
 	// initialise filter states of both the delayed ekf and the real time complementary filter
 	bool initialiseFilter(void);
