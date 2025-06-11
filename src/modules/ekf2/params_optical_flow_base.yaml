@@ -6,7 +6,7 @@ parameters:
   definitions:
     EKF2_OFV${i}_CTRL:
       description:
-        short: Optical flow upward (OFU) sensor aiding
+        short: Optical flow ${i} sensor aiding
       type: boolean
       default: 0
       min: 0
@@ -116,7 +116,7 @@ parameters:
         2: Upward
         4: Custom
       num_instances: *max_num_sensor_instances
-    EKF2_OFV_VAR_P:
+    EKF2_OFV${i}_VAR_P:
       description:
         short: Propotianlity value for variance
         long: |
@@ -124,3 +124,26 @@ parameters:
       type: float
       default: 100.0
       decimals: 2
+      num_instances: *max_num_sensor_instances
+
+    EKF2_OFV${i}_OF_ID:
+      description:
+          short: Accelerometer ${i} calibration device ID
+          long: Device ID of the accelerometer this calibration applies to.
+      category: System
+      type: int32
+      default: 0
+      decimal: 3
+      num_instances: *max_num_sensor_instances
+      instance_start: 0
+
+    EKF2_OFV${i}_DS_ID:
+      description:
+          short: Accelerometer ${i} calibration device ID
+          long: Device ID of the accelerometer this calibration applies to.
+      category: System
+      type: int32
+      default: 0
+      decimal: 3
+      num_instances: *max_num_sensor_instances
+      instance_start: 0

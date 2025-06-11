@@ -119,7 +119,6 @@
  void OpticalFlowBase::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
  {
  #if defined(MODULE_NAME)
-
      if (_sensor_optical_flow_sub.updated()) {
 	 sensor_optical_flow_s sensor_optical_flow{};
 	 _sensor_optical_flow_sub.copy(&sensor_optical_flow);
@@ -276,7 +275,6 @@
 		     // Conditions look good for starting fusion
 		     bool fused = true;
 		     bool reset = false;
-
 		     if (fused || reset) {
 			 ekf.enableControlStatusOpticalFlowBase();
 			 _state = State::active;

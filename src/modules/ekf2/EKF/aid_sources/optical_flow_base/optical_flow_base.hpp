@@ -45,10 +45,12 @@
  # include <px4_platform_common/module_params.h>
  # include <uORB/PublicationMulti.hpp>
  # include <uORB/Subscription.hpp>
+ # include <uORB/SubscriptionMultiArray.hpp>
  # include <uORB/topics/distance_sensor.h>
  # include <uORB/topics/estimator_aid_source3d.h>
  # include <uORB/topics/sensor_optical_flow.h>
  # include <uORB/topics/vehicle_optical_flow_vel.h>
+ # include <lib/drivers/device/Device.hpp>
  #endif // MODULE_NAME
 
  class Ekf;
@@ -67,13 +69,10 @@
 
 	 OpticalFlowBase(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),
-		_mounting_type(type),
-		kFlowInstance(flowInstance),
-		_sensor_optical_flow_sub(ORB_ID(sensor_optical_flow), 0),
-    		_distance_sensor_sub(ORB_ID(distance_sensor), 0)
+		_mounting_type(type)
 	 {
 		// Initialize parameter handles dynamically
-		char param_name[64];
+		char param_name[17];
 
 		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_CTRL", flowInstance);
 		_param_ekf2_of_ctrl = param_find(param_name);
@@ -111,10 +110,31 @@
 		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_VAR_P", flowInstance);
 		_param_ekf2_obs_var_p = param_find(param_name);
 
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_OF_ID", flowInstance);
+		_param_ekf2_of_id = param_find(param_name);
+
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_DS_ID", flowInstance);
+		_param_ekf2_ds_id = param_find(param_name);
+
 		_estimator_aid_src_optical_flow_base_pub.advertise();
+		printf("Starting Optical Flow instance: %d\n", flowInstance);
+		updateParameters();
 	 }
 
 	 ~OpticalFlowBase() = default;
+
+	 static OpticalFlowBase* create_instance(int instance_num){
+		param_t control_bit = PARAM_INVALID;
+		char param_name[17];
+		int32_t tmp_int;
+		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_CTRL", instance_num);
+		control_bit = param_find(param_name);
+		param_get(control_bit, &tmp_int);
+		if(tmp_int){
+			return new OpticalFlowBase(instance_num);
+		}
+		return nullptr;
+	 }
 
 	 void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
 
@@ -171,6 +191,41 @@
 		if (param_get(_param_ekf2_obs_var_p, &tmp_float) == PX4_OK) {
 			_ekf2_obs_var_p = tmp_float;
 		}
+
+		if (param_get(_param_ekf2_ds_id, &tmp_int) == PX4_OK) {
+			distance_sensor_s topic;
+			_ekf2_ds_id = tmp_int;
+			uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
+			for(int i = 0; i < distance_sensor_subs.size(); i++){
+				if(distance_sensor_subs[i].copy(&topic)){
+					printf("Distance Sensor Looking For: %d\n", _ekf2_ds_id);
+					if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
+					{
+						printf("Distance Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
+						_distance_sensor_sub.ChangeInstance(i);
+						break;
+					}
+				};
+
+			}
+		}
+
+		if (param_get(_param_ekf2_of_id, &tmp_int) == PX4_OK) {
+			sensor_optical_flow_s topic;
+			_ekf2_of_id = tmp_int;
+			uORB::SubscriptionMultiArray<sensor_optical_flow_s> optical_flow_subs{ORB_ID::sensor_optical_flow};
+			for(int i = 0; i < optical_flow_subs.size(); i++){
+				if(optical_flow_subs[i].copy(&topic)){
+					printf("Optical Flow Sensor Looking for: %d\n", _ekf2_of_id);
+					if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
+					{
+						printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
+						_sensor_optical_flow_sub.ChangeInstance(i);
+					}
+				}
+			}
+
+		}
 		updateParams();
 	 }
 
@@ -197,6 +252,8 @@
 	float _ekf2_of_pos_z;
 	int _ekf2_of_mode;
 	float _ekf2_obs_var_p;
+	int _ekf2_of_id;
+	int _ekf2_ds_id;
 
 	// Parameter handles for dynamic parameters
 	param_t _param_ekf2_of_ctrl;
@@ -211,6 +268,8 @@
 	param_t _param_ekf2_of_pos_z;
 	param_t _param_ekf2_of_mode;
 	param_t _param_ekf2_obs_var_p;
+	param_t _param_ekf2_of_id;
+	param_t _param_ekf2_ds_id;
 
 	bool isTimedOut(uint64_t last_sensor_timestamp, uint64_t time_delayed_us, uint64_t timeout_period) const
 	{
@@ -288,8 +347,8 @@
 
 	const uint8_t kFlowInstance = 0;
 
-	uORB::Subscription _sensor_optical_flow_sub;
-	uORB::Subscription _distance_sensor_sub;
+	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow)};
+	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor)};
 
  #endif // MODULE_NAME
  };

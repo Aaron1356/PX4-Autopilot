@@ -143,15 +143,13 @@ void Ekf::controlFusionModes(const imuSample &imu_delayed)
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-	_optical_flow_base->update(*this, imu_delayed);
-	// for (int i =0; i < _params.flow_num_instances; i++ ){
-	// 	flow_instances[i].instance->update(*this, imu_delayed);
-	// }
+	// _optical_flow_base->update(*this, imu_delayed);
+	for (auto& flow_instance: _flow_instances){
+		if(flow_instance != nullptr){
+			flow_instance->update(*this, imu_delayed);
+		}
+	}
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
-
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-	_optical_flow_sideways->update(*this, imu_delayed);
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 
 #if defined(CONFIG_EKF2_AUXVEL)
 	// Additional horizontal velocity data from an auxiliary sensor can be fused

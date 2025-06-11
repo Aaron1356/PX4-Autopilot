@@ -50,6 +50,15 @@ bool Ekf::init(uint64_t timestamp)
 		reset();
 	}
 
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+	// Dynamically Create Optical Flow Instances
+
+	for(int i=0; i < 10; i++){
+		if(_flow_instances[i] == nullptr){
+			_flow_instances[i] = OpticalFlowBase::create_instance(i);
+		}
+	}
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 	return _initialised;
 }
 
@@ -176,6 +185,19 @@ bool Ekf::update()
 
 	return false;
 }
+
+// #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+// void Ekf::create_flow_instances(int num){
+// 	printf("Flow Instance: %d", num);
+
+	// Dynamically Create Optical Flow Instances
+
+	// flow_instances[0] = new OpticalFlowBase(0);
+	// for(int i=0; i < num; i++){
+	// 	flow_instances[i] = new OpticalFlowBase(i);
+	// }
+// }
+// #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 bool Ekf::initialiseFilter()
 {
@@ -392,16 +414,13 @@ void Ekf::updateParameters()
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-	_optical_flow_base->updateParameters();
-	// for(int i =0; i < _params.flow_num_instances; i++){
-	// 	flow_instances[i].instance->updateParameters();
-	// }
+	for (auto& flow_instance : _flow_instances) {
+		if(flow_instance != nullptr){
+			flow_instance->updateParameters();
+		}
+	}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
-
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-	_optical_flow_sideways->updateParameters();
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
 }
 
 template<typename T>

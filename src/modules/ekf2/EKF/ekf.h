@@ -70,37 +70,8 @@
 # include "aid_sources/optical_flow_base/optical_flow_base.hpp"
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS)
-# include "aid_sources/optical_flow_sideways/optical_flow_sideways.hpp"
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
-
 enum class Likelihood { LOW, MEDIUM, HIGH };
 class ExternalVisionVel;
-// class OpticalFlowBase;
-
-// typedef struct {
-// 		OpticalFlowBase* instance;
-// 		int id;
-// 		bool active;
-// 	} OpticalFlowComponent;
-
-// OpticalFlowComponent* create_optical_flow_array(int count) {
-// 	OpticalFlowComponent* components = new OpticalFlowComponent[count];
-
-// 	for (int i = 0; i < count; i++) {
-// 		#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-// 			components[i].instance = new OpticalFlowBase(i); // or whatever param you need
-// 			components[i].id = i;
-// 			components[i].active = true;
-// 		#else
-// 			components[i].instance = NULL;
-// 			components[i].id = i;
-// 			components[i].active = false;
-// 		#endif
-// 	}
-
-// 	return components;
-// }
 
 class Ekf final : public EstimatorInterface
 {
@@ -452,7 +423,6 @@ public:
 
 	friend class AuxGlobalPosition;
 	friend class OpticalFlowBase;
-	friend class OpticalFlowSideways;
 
 private:
 
@@ -1179,13 +1149,11 @@ private:
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
-	OpticalFlowBase *_optical_flow_base {new OpticalFlowBase(1)};
-	// OpticalFlowComponent* flow_instances = create_optical_flow_array(_params.flow_num_instances);
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-	OpticalFlowSideways *_optical_flow_sideways {new OpticalFlowSideways(0)};
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
+	// Allocating Space for the Optical Flow Instances.
+	OpticalFlowBase *_flow_instances[10]{};
+
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 };
 
 #endif // !EKF_EKF_H
