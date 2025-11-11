@@ -331,6 +331,7 @@
 	 }
 
  #if defined(MODULE_NAME)
+	 aid_src.device_id = _ekf2_ds_id;
 	// Publish aid source data
 	aid_src.timestamp = hrt_absolute_time();
 	_estimator_aid_src_optical_flow_base_pub.publish(aid_src);

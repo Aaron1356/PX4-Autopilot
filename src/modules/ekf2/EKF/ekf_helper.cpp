@@ -871,17 +871,6 @@ void Ekf::updateHorizontalDeadReckoningstatus()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS) && defined(MODULE_NAME)
-
-	// optical flow base active
-	if (_control_status.flags.optical_flow_sideways
-	    && isRecent(_time_last_hor_vel_fuse, _params.no_aid_timeout_max)
-	   ) {
-		inertial_dead_reckoning = false;
-	}
-
-#endif // CONFIG_EKF2_OPTICAL_FLOW_SIDEWAYS
-
 #if defined(CONFIG_EKF2_AIRSPEED)
 
 	// air data aiding active

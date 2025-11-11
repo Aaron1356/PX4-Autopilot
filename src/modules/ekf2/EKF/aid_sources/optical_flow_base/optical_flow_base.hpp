@@ -192,6 +192,7 @@
 			_ekf2_obs_var_p = tmp_float;
 		}
 
+		printf("Doing something here in Velocity Optical Flow\n");
 		if (param_get(_param_ekf2_ds_id, &tmp_int) == PX4_OK) {
 			distance_sensor_s topic;
 			_ekf2_ds_id = tmp_int;
@@ -217,7 +218,7 @@
 			for(int i = 0; i < optical_flow_subs.size(); i++){
 				if(optical_flow_subs[i].copy(&topic)){
 					printf("Optical Flow Sensor Looking for: %d\n", _ekf2_of_id);
-					if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
+					if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_of_id)
 					{
 						printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
 						_sensor_optical_flow_sub.ChangeInstance(i);
