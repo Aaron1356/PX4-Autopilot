@@ -197,6 +197,7 @@
 			distance_sensor_s topic;
 			_ekf2_ds_id = tmp_int;
 			uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
+			printf("Number of Sensors: %d\n", distance_sensor_subs.size());
 			for(int i = 0; i < distance_sensor_subs.size(); i++){
 				if(distance_sensor_subs[i].copy(&topic)){
 					printf("Distance Sensor Looking For: %d\n", _ekf2_ds_id);
@@ -207,6 +208,7 @@
 						break;
 					}
 				};
+				printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
 
 			}
 		}
