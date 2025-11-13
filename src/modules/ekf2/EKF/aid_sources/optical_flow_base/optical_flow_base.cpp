@@ -119,6 +119,17 @@
  void OpticalFlowBase::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
  {
  #if defined(MODULE_NAME)
+	if(!subOpticalInstanceSet){
+		getOpticalFlowInstance(_ekf2_of_id);
+	}
+	if(!subDistanceInstanceSet){
+		getDistanceSensorInstance(_ekf2_ds_id);
+	}
+
+	if(!subOpticalInstanceSet || !subDistanceInstanceSet){
+		return;
+	}
+
      if (_sensor_optical_flow_sub.updated()) {
 	 sensor_optical_flow_s sensor_optical_flow{};
 	 _sensor_optical_flow_sub.copy(&sensor_optical_flow);
@@ -331,6 +342,7 @@
 	 }
 
  #if defined(MODULE_NAME)
+	 aid_src.device_id = _ekf2_ds_id;
 	// Publish aid source data
 	aid_src.timestamp = hrt_absolute_time();
 	_estimator_aid_src_optical_flow_base_pub.publish(aid_src);
