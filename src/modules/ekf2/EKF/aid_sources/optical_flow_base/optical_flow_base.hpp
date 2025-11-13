@@ -195,42 +195,10 @@
 		printf("Doing something here in Velocity Optical Flow\n");
 		if (param_get(_param_ekf2_ds_id, &tmp_int) == PX4_OK) {
 			getDistanceSensorInstance(tmp_int);
-			// distance_sensor_s topic;
-			// _ekf2_ds_id = tmp_int;
-			// uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
-			// printf("Number of Sensors: %d\n", distance_sensor_subs.size());
-			// for(int i = 0; i < distance_sensor_subs.size(); i++){
-			// 	if(distance_sensor_subs[i].copy(&topic)){
-			// 		printf("Distance Sensor Looking For: %d\n", _ekf2_ds_id);
-			// 		if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
-			// 		{
-			// 			printf("Distance Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
-			// 			_distance_sensor_sub.ChangeInstance(i);
-
-			// 			break;
-			// 		}
-			// 	}
-			// 	printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
-
-			// }
 		}
 
 		if (param_get(_param_ekf2_of_id, &tmp_int) == PX4_OK) {
 			getOpticalFlowInstance(tmp_int);
-			// sensor_optical_flow_s topic;
-			// _ekf2_of_id = tmp_int;
-			// uORB::SubscriptionMultiArray<sensor_optical_flow_s> optical_flow_subs{ORB_ID::sensor_optical_flow};
-			// for(int i = 0; i < optical_flow_subs.size(); i++){
-			// 	if(optical_flow_subs[i].copy(&topic)){
-			// 		printf("Optical Flow Sensor Looking for: %d\n", _ekf2_of_id);
-			// 		if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_of_id)
-			// 		{
-			// 			printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
-			// 			_sensor_optical_flow_sub.ChangeInstance(i);
-			// 			subInstanceSet = true;
-			// 		}
-			// 	}
-			// }
 
 		}
 		updateParams();
