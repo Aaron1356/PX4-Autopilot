@@ -38,8 +38,13 @@
 #include "FlightTaskManualPosition.hpp"
 #include <mathlib/mathlib.h>
 #include <float.h>
+#include <px4_platform_common/log.h>
 
 using namespace matrix;
+
+// #define DISABLE_POSITION_HOLD
+// #define UPDATE_POSITION_TO_CURRENT
+#define PREVENT_POSITION_RETURN true
 
 bool FlightTaskManualPosition::updateInitialize()
 {
@@ -104,22 +109,59 @@ void FlightTaskManualPosition::_updateXYlock()
 	const bool apply_brake = Vector2f(_velocity_setpoint).length() < FLT_EPSILON;
 	const bool stopped = (_param_mpc_hold_max_xy.get() < FLT_EPSILON || vel_xy_norm < _param_mpc_hold_max_xy.get());
 
-	if (apply_brake && stopped && !Vector2f(_position_setpoint).isAllFinite()) {
-		_position_setpoint.xy() = _position.xy();
+	PX4_INFO("=== Position Lock Debug ===");
+	PX4_INFO("Pos: [%.2f, %.2f]", (double)_position(0), (double)_position(1));
+	PX4_INFO("Pos SP: [%.2f, %.2f]", (double)_position_setpoint(0), (double)_position_setpoint(1));
+	PX4_INFO("Vel: [%.2f, %.2f]", (double)_velocity(0), (double)_velocity(1));
+	PX4_INFO("Vel SP: [%.2f, %.2f]", (double)_velocity_setpoint(0), (double)_velocity_setpoint(1));
+	PX4_INFO("Apply brake: %d, Stopped: %d", apply_brake, stopped);
 
-	} else if (Vector2f(_position_setpoint).isAllFinite() && apply_brake) {
-		// Position is locked but check if a reset event has happened.
-		// We will shift the setpoints.
-		if (_sub_vehicle_local_position.get().xy_reset_counter != _reset_counter) {
-			_position_setpoint.xy() = _position.xy();
-			_reset_counter = _sub_vehicle_local_position.get().xy_reset_counter;
-		}
+	#if PREVENT_POSITION_RETURN
+		// When velocity setpoint is zero and vehicle is stopped, continuously update
+		// BOTH position setpoint AND reset velocity feedback to prevent the position
+		// controller from generating corrective velocity commands
 
-	} else {
-		/* don't lock*/
+		// if (apply_brake && stopped) {
+		// 	// Continuously update position setpoint to current position
+		// 	_position_setpoint.xy() = _position.xy();
+
+		// 	// Also update velocity feedback to current velocity
+		// 	// This prevents the position controller from seeing an error and generating
+		// 	// a velocity command to correct it
+		// 	if (_velocity.isAllFinite()) {
+		// 		_velocity_setpoint.xy() = _velocity.xy();
+		// 	}
+		// } else if(apply_brake){
+		// 	// When moving, don't lock position - use velocity control only
+		// 	_position_setpoint(0) = NAN;
+		// 	_position_setpoint(1) = NAN;
+		// 	// _velocity_setpoint(0) = NAN;
+		// 	// _velocity_setpoint(1) = NAN;
+		// } else {
+		// 	// When moving, don't lock position - use velocity control only
 		_position_setpoint(0) = NAN;
 		_position_setpoint(1) = NAN;
-	}
+		// }
+
+	#else
+		// ORIGINAL BEHAVIOR
+		if (apply_brake && stopped && !Vector2f(_position_setpoint).isAllFinite()) {
+			_position_setpoint.xy() = _position.xy();
+
+		} else if (Vector2f(_position_setpoint).isAllFinite() && apply_brake) {
+			// Position is locked but check if a reset event has happened.
+			// We will shift the setpoints.
+			if (_sub_vehicle_local_position.get().xy_reset_counter != _reset_counter) {
+				_position_setpoint.xy() = _position.xy();
+				_reset_counter = _sub_vehicle_local_position.get().xy_reset_counter;
+			}
+
+		} else {
+			/* don't lock*/
+			_position_setpoint(0) = NAN;
+			_position_setpoint(1) = NAN;
+		}
+	#endif
 }
 
 void FlightTaskManualPosition::_updateSetpoints()
