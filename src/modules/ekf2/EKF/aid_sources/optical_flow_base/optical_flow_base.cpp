@@ -319,6 +319,7 @@
 		     aid_src.fused = true;
 		     aid_src.time_last_fuse = imu_delayed.time_us;
 
+		     // Better Notion of if this state is correct, need to sure that partial is tiimestamped
 		     ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
 		     ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
 		 }

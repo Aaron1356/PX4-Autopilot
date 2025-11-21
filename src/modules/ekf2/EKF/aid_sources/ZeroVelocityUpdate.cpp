@@ -52,16 +52,17 @@ bool ZeroVelocityUpdate::update(Ekf &ekf, const estimator::imuSample &imu_delaye
 
 	if (zero_velocity_update_data_ready) {
 		const bool continuing_conditions_passing = ekf.control_status_flags().vehicle_at_rest
-				&& ekf.control_status_prev_flags().vehicle_at_rest
-				&& (!ekf.isVerticalVelocityAidingActive()
-				    || !ekf.control_status_flags().tilt_align); // otherwise the filter is "too rigid" to follow a position drift
+				&& ekf.control_status_prev_flags().vehicle_at_rest;
+				// && (!ekf.isVerticalVelocityAidingActive()
+				//     || !ekf.control_status_flags().tilt_align); // otherwise the filter is "too rigid" to follow a position drift
 
 		if (continuing_conditions_passing) {
 			Vector3f vel_obs{0.f, 0.f, 0.f};
 
 			// Set a low variance initially for faster leveling and higher
 			// later to let the states follow the measurements
-			const float obs_var = ekf.control_status_flags().tilt_align ? sq(0.2f) : sq(0.001f);
+			// const float obs_var = ekf.control_status_flags().tilt_align ? sq(0.2f) : sq(0.001f);
+			const float obs_var = sq(0.001f);
 			Vector3f innov_var = ekf.getVelocityVariance() + obs_var;
 
 			for (unsigned i = 0; i < 3; i++) {
