@@ -123,8 +123,6 @@ bool PositionControl::update(const float dt)
 
 void PositionControl::_positionControl()
 {
-	_pos_sp(0) = NAN;
-	_pos_sp(1) = NAN;
 
 	// P-position controller
 	Vector3f vel_sp_position = (_pos_sp - _pos).emult(_gain_pos_p);

@@ -204,10 +204,10 @@ void StickAccelerationXY::lockPosition(const Vector3f &pos, const matrix::Vector
 	const bool moving = _velocity_setpoint.norm_squared() > FLT_EPSILON;
 	const bool position_locked = Vector2f(_position_setpoint).isAllFinite();
 
-	// lock position
-	// if (!moving && !position_locked) {
-	// 	_position_setpoint = pos.xy();
-	// }
+	lock position
+	if (!moving && !position_locked) {
+		_position_setpoint = pos.xy();
+	}
 
 	// open position loop
 	if (moving && position_locked) {
