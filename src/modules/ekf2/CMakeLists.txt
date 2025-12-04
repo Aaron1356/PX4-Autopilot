@@ -208,9 +208,9 @@ if(CONFIG_EKF2_OPTICAL_FLOW)
 	list(APPEND EKF_MODULE_PARAMS params_optical_flow.yaml)
 endif()
 
-if(CONFIG_EKF2_OPTICAL_FLOW_BASE)
-	list(APPEND EKF_SRCS EKF/aid_sources/optical_flow_base/optical_flow_base.cpp)
-	list(APPEND EKF_MODULE_PARAMS params_optical_flow_base.yaml)
+if(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
+	list(APPEND EKF_SRCS EKF/aid_sources/optical_flow_velocity/optical_flow_velocity.cpp)
+	list(APPEND EKF_MODULE_PARAMS params_optical_flow_velocity.yaml)
 endif()
 
 if(CONFIG_EKF2_RANGE_FINDER)

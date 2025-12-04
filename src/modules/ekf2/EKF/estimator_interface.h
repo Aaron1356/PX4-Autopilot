@@ -298,8 +298,8 @@ public:
 	void enableControlStatusAuxGpos() { _control_status.flags.aux_gpos = true; }
 	void disableControlStatusAuxGpos() { _control_status.flags.aux_gpos = false; }
 
-	void enableControlStatusOpticalFlowBase() { _control_status.flags.optical_flow_base = true; }
-	void disableControlStatusOpticalFlowBase() { _control_status.flags.optical_flow_base = false; }
+	void enableControlStatusOpticalFlowVelocity() { _control_status.flags.optical_flow_velocity = true; }
+	void disableControlStatusOpticalFlowVelocity() { _control_status.flags.optical_flow_velocity = false; }
 
 	// get EKF internal fault status
 	const fault_status_u &fault_status() const { return _fault_status; }

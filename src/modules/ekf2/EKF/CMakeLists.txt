@@ -121,8 +121,8 @@ if(CONFIG_EKF2_OPTICAL_FLOW)
 	)
 endif()
 
-if(CONFIG_EKF2_OPTICAL_FLOW_BASE)
-	list(APPEND EKF_SRCS aid_sources/optical_flow_base/optical_flow_base.cpp)
+if(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
+	list(APPEND EKF_SRCS aid_sources/optical_flow_velocity/optical_flow_velocity.cpp)
 endif()
 
 if(CONFIG_EKF2_RANGE_FINDER)

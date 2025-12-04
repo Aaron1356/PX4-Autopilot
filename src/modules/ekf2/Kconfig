@@ -113,7 +113,7 @@ depends on MODULES_EKF2
 	---help---
 		EKF2 optical flow fusion support.
 
-menuconfig EKF2_OPTICAL_FLOW_BASE
+menuconfig EKF2_OPTICAL_FLOW_VELOCITY
 depends on MODULES_EKF2
 	bool "optical flow base fusion support"
 	default y

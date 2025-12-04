@@ -33,15 +33,15 @@
 
  #include "ekf.h"
 
- #include "aid_sources/optical_flow_base/optical_flow_base.hpp"
+ #include "aid_sources/optical_flow_velocity/optical_flow_velocity.hpp"
 
  #include "ekf_derivation/generated/compute_body_vel_innov_var_h.h"
  #include "ekf_derivation/generated/compute_body_vel_y_innov_var.h"
  #include "ekf_derivation/generated/compute_body_vel_z_innov_var.h"
 
- #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+ #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
 
- matrix::Dcmf OpticalFlowBase::calculateSensorToBodyRotation() const
+ matrix::Dcmf OpticalFlowVelocity::calculateSensorToBodyRotation() const
  {
      // Get rotation parameters
      const float roll = math::radians(_ekf2_of_roll);
@@ -52,7 +52,7 @@
      return matrix::Dcmf(matrix::Eulerf(roll, pitch, yaw));
  }
 
- uint8_t OpticalFlowBase::getVelocityUpdateMask() const
+ uint8_t OpticalFlowVelocity::getVelocityUpdateMask() const
  {
      uint8_t update_mask = 0;
      int type = _ekf2_of_mode;
@@ -101,7 +101,7 @@
      return update_mask;
  }
 
- Vector3f OpticalFlowBase::flowToBodyVelocity(const Vector2f &flow_compensated_xy_rad, float range_m, float flow_dt) const
+ Vector3f OpticalFlowVelocity::flowToBodyVelocity(const Vector2f &flow_compensated_xy_rad, float range_m, float flow_dt) const
  {
      // Convert from flow rate to velocity in sensor frame
      Vector3f vel_sensor;
@@ -116,7 +116,7 @@
      return R_to_body * vel_sensor;
  }
 
- void OpticalFlowBase::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
+ void OpticalFlowVelocity::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
  {
  #if defined(MODULE_NAME)
 	if(!subOpticalInstanceSet){
@@ -183,7 +183,7 @@
 	     return;
 	 }
 
-	 estimator_aid_source3d_s &aid_src = _aid_src_optical_flow_base;
+	 estimator_aid_source3d_s &aid_src = _aid_src_optical_flow_velocity;
 
 	 // compensate for body motion to give a LOS rate
 	 const Vector2f flow_compensated_xy_rad = sample.flow_xy_rad - sample.gyro_integral.xy();
@@ -210,24 +210,12 @@
 	 const Vector3f velocity_offset_body = angular_velocity % position_offset_body; // Cross product
 	 const Vector3f vel_body = vel_body_raw - velocity_offset_body;
 
-	 // Initialize or update low-pass filters
-	 if (_flow_counter == 0) {
-	     _flow_sensor_vel_lpf.reset(Vector2f(vel_body_raw(0), vel_body_raw(1)));
-	     _flow_body_vel_lpf.reset(Vector2f(vel_body(0), vel_body(1)));
+	_flow_sensor_vel_lpf.update(Vector2f(vel_body_raw(0), vel_body_raw(1)));
+	_flow_body_vel_lpf.update(Vector2f(vel_body(0), vel_body(1)));
 
-	     _flow_mean.reset();
-	     _flow_sensor_vel_mean.reset();
+	_flow_mean.update(sample.flow_xy_rad);
+	_flow_sensor_vel_mean.update(Vector2f(vel_body_raw(0), vel_body_raw(1)));
 
-	     _flow_counter = 1;
-	 } else {
-	     _flow_sensor_vel_lpf.update(Vector2f(vel_body_raw(0), vel_body_raw(1)));
-	     _flow_body_vel_lpf.update(Vector2f(vel_body(0), vel_body(1)));
-
-	     _flow_mean.update(sample.flow_xy_rad);
-	     _flow_sensor_vel_mean.update(Vector2f(vel_body_raw(0), vel_body_raw(1)));
-
-	     _flow_counter++;
-	 }
 
 	 // Determine observation noise based on quality parameter
 	 const float R = math::max(_ekf2_of_noise, 0.01f);
@@ -287,7 +275,7 @@
 		     bool fused = true;
 		     bool reset = false;
 		     if (fused || reset) {
-			 ekf.enableControlStatusOpticalFlowBase();
+			 ekf.enableControlStatusOpticalFlowVelocity();
 			 _state = State::active;
 		     }
 		 }
@@ -325,15 +313,15 @@
 		 }
 
 		 if (isTimedOut(aid_src.time_last_fuse, imu_delayed.time_us, ekf._params.no_aid_timeout_max)) {
-		     if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_base)) {
+		     if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_velocity)) {
 			 // TODO: Handle reset if this is the only source of horizontal aiding
 		     } else {
-			 ekf.disableControlStatusOpticalFlowBase();
+			 ekf.disableControlStatusOpticalFlowVelocity();
 			 _state = State::stopped;
 		     }
 		 }
 	     } else {
-		 ekf.disableControlStatusOpticalFlowBase();
+		 ekf.disableControlStatusOpticalFlowVelocity();
 		 _state = State::stopped;
 	     }
 	     break;
@@ -346,7 +334,7 @@
 	 aid_src.device_id = _ekf2_ds_id;
 	// Publish aid source data
 	aid_src.timestamp = hrt_absolute_time();
-	_estimator_aid_src_optical_flow_base_pub.publish(aid_src);
+	_estimator_aid_src_optical_flow_velocity_pub.publish(aid_src);
 
 	// Publish optical flow velocity
 	{
@@ -382,7 +370,7 @@
 		gyro_rate.copyTo(flow_vel.gyro_rate);
 		ref_body_rate.copyTo(flow_vel.ref_gyro);
 		flow_vel.timestamp = hrt_absolute_time();
-		_estimator_optical_flow_base_vel_pub.publish(flow_vel);
+		_estimator_optical_flow_velocity_vel_pub.publish(flow_vel);
 	}
 
 	// Update test ratios
@@ -394,10 +382,10 @@
  #endif // MODULE_NAME
 
      } else if ((_state != State::stopped) && isTimedOut(_time_last_buffer_push, imu_delayed.time_us, (uint64_t)5e6)) {
-	 ekf.disableControlStatusOpticalFlowBase();
+	 ekf.disableControlStatusOpticalFlowVelocity();
 	 _state = State::stopped;
 	 ECL_WARN("Optical flow data stopped");
      }
  }
 
- #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+ #endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY

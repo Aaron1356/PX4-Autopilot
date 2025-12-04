@@ -31,15 +31,15 @@
  *
  ****************************************************************************/
 
- #ifndef EKF_OPTICAL_FLOW_BASE_HPP
- #define EKF_OPTICAL_FLOW_BASE_HPP
+ #ifndef EKF_OPTICAL_FLOW_VELOCITY_HPP
+ #define EKF_OPTICAL_FLOW_VELOCITY_HPP
 
  #include "../../common.h"
  #include "../../RingBuffer.h"
 
  #include <lib/mathlib/math/WelfordMeanVector.hpp>
 
- #if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+ #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
 
  #if defined(MODULE_NAME)
  # include <px4_platform_common/module_params.h>
@@ -55,7 +55,7 @@
 
  class Ekf;
 
- class OpticalFlowBase : public ModuleParams
+ class OpticalFlowVelocity : public ModuleParams
  {
  public:
 	 // Define sensor mounting type
@@ -67,7 +67,7 @@
 		 CUSTOM    // Custom orientation defined by parameters
 	 };
 
-	 OpticalFlowBase(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
+	 OpticalFlowVelocity(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),
 		_mounting_type(type)
 	 {
@@ -116,14 +116,14 @@
 		snprintf(param_name, sizeof(param_name), "EKF2_OFV%d_DS_ID", flowInstance);
 		_param_ekf2_ds_id = param_find(param_name);
 
-		_estimator_aid_src_optical_flow_base_pub.advertise();
+		_estimator_aid_src_optical_flow_velocity_pub.advertise();
 		printf("Starting Optical Flow instance: %d\n", flowInstance);
 		updateParameters();
 	 }
 
-	 ~OpticalFlowBase() = default;
+	 ~OpticalFlowVelocity() = default;
 
-	 static OpticalFlowBase* create_instance(int instance_num){
+	 static OpticalFlowVelocity* create_instance(int instance_num){
 		param_t control_bit = PARAM_INVALID;
 		char param_name[17];
 		int32_t tmp_int;
@@ -131,7 +131,7 @@
 		control_bit = param_find(param_name);
 		param_get(control_bit, &tmp_int);
 		if(tmp_int){
-			return new OpticalFlowBase(instance_num);
+			return new OpticalFlowVelocity(instance_num);
 		}
 		return nullptr;
 	 }
@@ -208,7 +208,7 @@
 		distance_sensor_s topic;
 		_ekf2_ds_id = tmp_int;
 		uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
-		printf("Number of Sensors: %d\n", distance_sensor_subs.size());
+		printf("Device Searching for %d\n", (int)(_ekf2_ds_id));
 		for(int i = 0; i < distance_sensor_subs.size(); i++){
 			if(distance_sensor_subs[i].copy(&topic)){
 				if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
@@ -219,7 +219,8 @@
 					break;
 				}
 			}
-			printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
+			printf("Device id @ %d : %d\n", i, (int)(topic.device_id));
+			// printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
 
 		}
 	 }
@@ -319,7 +320,7 @@
 		uint8_t     flow_quality{};   ///< quality indicator between 0 and 255
 	};
 
-	estimator_aid_source3d_s _aid_src_optical_flow_base{};
+	estimator_aid_source3d_s _aid_src_optical_flow_velocity{};
 	RingBuffer<OpticalFlowSample> _ringbuffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
 	uint64_t _time_last_buffer_push{0};
 
@@ -357,8 +358,8 @@
 	};
 	reset_counters_s _reset_counters{};
 
-	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_base_pub{ORB_ID(estimator_aid_src_optical_flow_base)};
-	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_base_vel_pub{ORB_ID(estimator_optical_flow_base_vel)};
+	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_velocity_pub{ORB_ID(estimator_aid_src_optical_flow_velocity)};
+	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_velocity_vel_pub{ORB_ID(estimator_optical_flow_velocity_vel)};
 
 	const uint8_t kFlowInstance = 0;
 
@@ -368,6 +369,6 @@
  #endif // MODULE_NAME
  };
 
- #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+ #endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
- #endif // !EKF_OPTICAL_FLOW_BASE_HPP
+ #endif // !EKF_OPTICAL_FLOW_VELOCITY_HPP

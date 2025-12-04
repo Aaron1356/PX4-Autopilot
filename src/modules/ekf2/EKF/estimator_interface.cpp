@@ -626,7 +626,7 @@ int EstimatorInterface::getNumberOfActiveHorizontalVelocityAidingSources() const
 {
 	return int(_control_status.flags.gnss_vel)
 	       + int(_control_status.flags.opt_flow)
-	       + int(_control_status.flags.optical_flow_base)
+	       + int(_control_status.flags.optical_flow_velocity)
 	       + int(_control_status.flags.ev_vel)
 	       // Combined airspeed and sideslip fusion allows sustained wind relative dead reckoning
 	       // and so is treated as a single aiding source.
@@ -676,7 +676,7 @@ int EstimatorInterface::getNumberOfActiveVerticalVelocityAidingSources() const
 {
 	return int(_control_status.flags.gnss_vel)
 	       + int(_control_status.flags.ev_vel)
-	       + int(_control_status.flags.optical_flow_base);
+	       + int(_control_status.flags.optical_flow_velocity);
 }
 
 bool EstimatorInterface::isNorthEastAidingActive() const

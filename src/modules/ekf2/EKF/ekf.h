@@ -66,9 +66,9 @@
 # include "aid_sources/aux_global_position/aux_global_position.hpp"
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE)
-# include "aid_sources/optical_flow_base/optical_flow_base.hpp"
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
+# include "aid_sources/optical_flow_velocity/optical_flow_velocity.hpp"
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 enum class Likelihood { LOW, MEDIUM, HIGH };
 class ExternalVisionVel;
@@ -422,7 +422,7 @@ public:
 	void updateParameters();
 
 	friend class AuxGlobalPosition;
-	friend class OpticalFlowBase;
+	friend class OpticalFlowVelocity;
 
 private:
 
@@ -1148,12 +1148,12 @@ private:
 	AuxGlobalPosition _aux_global_position {};
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
 
 	// Allocating Space for the Optical Flow Instances.
-	OpticalFlowBase *_flow_instances[10]{};
+	OpticalFlowVelocity *_flow_instances[10]{};
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 };
 
 #endif // !EKF_EKF_H

@@ -297,8 +297,8 @@ void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 			float gndclearance = math::max(_params.rng_gnd_clearance, 0.1f);
 			vel_err_conservative = math::max(getHagl(), gndclearance) * Vector2f(_aid_src_optical_flow.innovation).norm();
 
-		} else if (_control_status.flags.optical_flow_base) {
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+		} else if (_control_status.flags.optical_flow_velocity) {
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
 			for (auto& flow_instance : _flow_instances) {
 				if(flow_instance != nullptr){
 					vel_err_conservative = math::max(vel_err_conservative, flow_instance->innovation().norm());
@@ -306,7 +306,7 @@ void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 				}
 			}
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 		}
 
@@ -488,9 +488,9 @@ float Ekf::getHorizontalVelocityInnovationTestRatio() const
 		}
 	}
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
 
-	if (isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.optical_flow_base)) {
+	if (isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.optical_flow_velocity)) {
 		for (auto& flow_instance : _flow_instances) {
 			if(flow_instance != nullptr){
 				test_ratio = math::max(test_ratio, fabsf(flow_instance->test_ratio_filtered()));
@@ -499,7 +499,7 @@ float Ekf::getHorizontalVelocityInnovationTestRatio() const
 
 	}
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
@@ -860,16 +860,16 @@ void Ekf::updateHorizontalDeadReckoningstatus()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) && defined(MODULE_NAME)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
 
 	// optical flow base active
-	if (_control_status.flags.optical_flow_base
+	if (_control_status.flags.optical_flow_velocity
 	    && isRecent(_time_last_hor_vel_fuse, _params.no_aid_timeout_max)
 	   ) {
 		inertial_dead_reckoning = false;
 	}
 
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 #if defined(CONFIG_EKF2_AIRSPEED)
 

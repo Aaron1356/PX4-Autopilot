@@ -22,4 +22,4 @@ bool innovation_rejected        # true if the observation has been rejected
 bool fused                      # true if the sample was successfully fused
 
 # TOPICS estimator_aid_src_ev_vel estimator_aid_src_gnss_vel estimator_aid_src_gravity estimator_aid_src_mag
-# TOPICS estimator_aid_src_optical_flow_base
+# TOPICS estimator_aid_src_optical_flow_velocity

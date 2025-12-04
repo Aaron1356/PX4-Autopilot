@@ -361,10 +361,10 @@ void EKF2::AdvertiseTopics()
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
-#if defined(CONFIG_EKF2_OPTICAL_FLOW_BASE) // base
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) // base
 		if(_param_ekf2_of_int.get() < 0){
-			_estimator_optical_flow_base_vel_pub.advertise();
-			_estimator_aid_src_optical_flow_base_pub.advertise();
+			_estimator_optical_flow_velocity_vel_pub.advertise();
+			_estimator_aid_src_optical_flow_velocity_pub.advertise();
 		}
 
 #endif // CONFIG_EKF2_OPTICAL_FLOW
@@ -1944,7 +1944,7 @@ void EKF2::PublishStatusFlags(const hrt_abstime &timestamp)
 		status_flags.cs_constant_pos        = _ekf.control_status_flags().constant_pos;
 		status_flags.cs_baro_fault	    = _ekf.control_status_flags().baro_fault;
 		status_flags.cs_gnss_vel            = _ekf.control_status_flags().gnss_vel;
-		status_flags.cs_optical_flow_base = _ekf.control_status_flags().optical_flow_base;
+		status_flags.cs_optical_flow_velocity = _ekf.control_status_flags().optical_flow_velocity;
 
 		status_flags.fault_status_changes     = _filter_fault_status_changes;
 		status_flags.fs_bad_mag_x             = _ekf.fault_status_flags().bad_mag_x;
