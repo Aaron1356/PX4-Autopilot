@@ -217,27 +217,42 @@
 	_flow_sensor_vel_mean.update(Vector2f(vel_body_raw(0), vel_body_raw(1)));
 
 
-	 // Determine observation noise based on quality parameter
-	 const float R = math::max(_ekf2_of_noise, 0.01f);
+	// Determine observation noise based on quality parameter
+	// const float R = math::max(_ekf2_of_noise, 0.01f);
 
-	 const Vector3f measurement{vel_body};
-	 const Vector3f measurement_var{R, R, R};
+	const Vector3f measurement{vel_body};
+	Vector3f measurement_var_scaled;
 
-	 // Calculate innovation: difference between predicted and measured body velocity
-	 Ekf::VectorState H[3];
-	 Vector3f innov_var;
-	 Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
+	// Get velocity update mask (which velocity components to use)
+	const float base_noise = math::max(_ekf2_of_noise, 0.01f);
+	const uint8_t vel_update_mask = getVelocityUpdateMask();
+	for (uint8_t i = 0 ; i < 3; i++){
+		if(vel_update_mask & (1 << i)) {
+			measurement_var_scaled(i) = base_noise * base_noise;
+		} else {
+			measurement_var_scaled(i) = 1e6f;
+		}
+	}
+	const Vector3f measurement_var = measurement_var_scaled;
 
-	 Vector3f observe_var;
-	 observe_var = measurement_var * (1.0f + sample.range_m / _ekf2_obs_var_p);
+	// Calculate innovation: difference between predicted and measured body velocity
+	Ekf::VectorState H[3];
+	Vector3f innov_var;
+	Vector3f innov = ekf._R_to_earth.transpose() * ekf._state.vel - vel_body;
 
-	 // Get velocity update mask (which velocity components to use)
-	 const uint8_t vel_update_mask = getVelocityUpdateMask();
 
-	 // Zero out components we don't want to update
-	 if (!(vel_update_mask & 0x1)) innov(0) = 0.f; // X
-	 if (!(vel_update_mask & 0x2)) innov(1) = 0.f; // Y
-	 if (!(vel_update_mask & 0x4)) innov(2) = 0.f; // Z
+
+	Vector3f observe_var;
+	Vector3f range_scale = getAxisDependentRangeScale(sample.range_m);
+	// observe_var = measurement_var * (1.0f + sample.range_m / _ekf2_obs_var_p);
+	for (uint8_t i =0; i < 3; i++){
+		observe_var(i) = measurement_var(i) * range_scale(i);
+	}
+
+	// Zero out components we don't want to update
+	if (!(vel_update_mask & 0x1)) innov(0) = 0.f; // X
+	if (!(vel_update_mask & 0x2)) innov(1) = 0.f; // Y
+	if (!(vel_update_mask & 0x4)) innov(2) = 0.f; // Z
 
 	 const auto state_vector = ekf._state.vector();
 	 sym::ComputeBodyVelInnovVarH(state_vector, ekf.P, observe_var, &innov_var, &H[0], &H[1], &H[2]);
@@ -255,8 +270,9 @@
 		       innovation_gate);      // innovation gate
 
 	 // Define conditions for using this measurement
+	 const uint8_t quality_threshold = getMinQualityThreshold();
 	 const bool continuing_conditions = ekf.control_status_flags().tilt_align
-				&& sample.flow_quality > 10
+				&& sample.flow_quality > quality_threshold
 				&& PX4_ISFINITE(sample.range_m);
 
 	 const bool starting_conditions = continuing_conditions

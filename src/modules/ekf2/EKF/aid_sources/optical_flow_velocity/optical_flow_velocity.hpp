@@ -242,6 +242,49 @@
 		}
 	 }
 
+	 Vector3f getAxisDependentRangeScale(float range_m) const
+	{
+		const matrix::Dcmf R_to_body = calculateSensorToBodyRotation();
+		const Vector3f z_axis_body = R_to_body.col(2);
+
+		Vector3f range_scale;
+
+		// For each body axis, scale based on how much the range affects that velocity
+		for (uint8_t i = 0; i < 3; i++) {
+			// Higher z_axis component in this direction = more sensitive to range errors
+			float sensitivity = fabsf(z_axis_body(i));
+			range_scale(i) = 1.0f + (range_m / _ekf2_obs_var_p) * sensitivity * sensitivity;
+		}
+
+		return range_scale;
+	}
+
+	uint8_t getMinQualityThreshold() const
+	{
+		MountingType mounting_type = static_cast<MountingType>(_ekf2_of_mode);
+
+		switch (mounting_type) {
+			case MountingType::DOWNWARD:
+			return 50; // Most reliable - lower threshold
+
+			case MountingType::FORWARD:
+			case MountingType::SIDEWAYS:
+			return 80; // Less reliable for height - higher threshold
+
+			case MountingType::UPWARD:
+			return 100; // Least reliable - highest threshold
+
+			case MountingType::CUSTOM:
+			// Scale based on how much we rely on range measurement
+			const matrix::Dcmf R_to_body = calculateSensorToBodyRotation();
+			const Vector3f z_axis_body = R_to_body.col(2);
+			float down_component = fabsf(z_axis_body(2));
+			return (uint8_t)(50 + 50 * (1.0f - down_component)); // 50-100 range
+		}
+
+		return 100;
+	}
+
 	 const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
 	 const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
 
