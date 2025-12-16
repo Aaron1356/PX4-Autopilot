@@ -199,6 +199,7 @@
 
 		if (param_get(_param_ekf2_of_id, &tmp_int) == PX4_OK) {
 			getOpticalFlowInstance(tmp_int);
+
 		}
 		updateParams();
 	 }
