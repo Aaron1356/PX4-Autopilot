@@ -61,7 +61,7 @@
 	 // Define sensor mounting type
 	 enum class MountingType {
 		 FORWARD,  // Facing forward (default)
-		 SIDEWAYS, // Facing sideways (right)
+		 SIDEWAYS, // Facing sideways
 		 UPWARD,   // Facing upward
 		 DOWNWARD, // Facing downward
 		 CUSTOM    // Custom orientation defined by parameters
@@ -209,6 +209,9 @@
 		_ekf2_ds_id = tmp_int;
 		uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
 		printf("Device Searching for %d\n", (int)(_ekf2_ds_id));
+		if(subDistanceInstanceSet){
+			return;
+		}
 		for(int i = 0; i < distance_sensor_subs.size(); i++){
 			if(distance_sensor_subs[i].copy(&topic)){
 				if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_ds_id)
@@ -229,6 +232,9 @@
 		sensor_optical_flow_s topic;
 		_ekf2_of_id = tmp_int;
 		uORB::SubscriptionMultiArray<sensor_optical_flow_s> optical_flow_subs{ORB_ID::sensor_optical_flow};
+		if(subOpticalInstanceSet){
+			return;
+		}
 		for(int i = 0; i < optical_flow_subs.size(); i++){
 			if(optical_flow_subs[i].copy(&topic)){
 				if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_of_id)

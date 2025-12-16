@@ -52,11 +52,17 @@ bool Ekf::init(uint64_t timestamp)
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
 	// Dynamically Create Optical Flow Instances
-
-	for(int i=0; i < 10; i++){
-		if(_flow_instances[i] == nullptr){
-			_flow_instances[i] = OpticalFlowVelocity::create_instance(i);
+	static bool flow_instances_created = false;
+	if (!flow_instances_created) {
+		for(int i = 0; i < 10; i++){
+			if(_flow_instances[i] == nullptr){
+				_flow_instances[i] = OpticalFlowVelocity::create_instance(i);
+				if(_flow_instances[i] != nullptr) {
+					printf("Created optical flow instance %d\n", i);
+				}
+			}
 		}
+		flow_instances_created = true;
 	}
 #endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 	return _initialised;
