@@ -291,7 +291,7 @@
 		     bool fused = true;
 		     bool reset = false;
 		     if (fused || reset) {
-			 ekf.enableControlStatusOpticalFlowVelocity();
+			 ekf.enableControlStatusOpticalFlowVelocity(kFlowInstance);
 			 _state = State::active;
 		     }
 		 }
@@ -332,12 +332,12 @@
 		     if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_velocity)) {
 			 // TODO: Handle reset if this is the only source of horizontal aiding
 		     } else {
-			 ekf.disableControlStatusOpticalFlowVelocity();
+			 ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
 			 _state = State::stopped;
 		     }
 		 }
 	     } else {
-		 ekf.disableControlStatusOpticalFlowVelocity();
+		 ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
 		 _state = State::stopped;
 	     }
 	     break;
@@ -398,7 +398,7 @@
  #endif // MODULE_NAME
 
      } else if ((_state != State::stopped) && isTimedOut(_time_last_buffer_push, imu_delayed.time_us, (uint64_t)5e6)) {
-	 ekf.disableControlStatusOpticalFlowVelocity();
+	 ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
 	 _state = State::stopped;
 	 ECL_WARN("Optical flow data stopped");
      }

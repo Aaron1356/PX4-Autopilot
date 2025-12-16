@@ -67,8 +67,8 @@
 		 CUSTOM    // Custom orientation defined by parameters
 	 };
 
-	 OpticalFlowVelocity(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
-		ModuleParams(nullptr),
+	 OpticalFlowBVelocity(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
+		ModuleParams(nullptr),kFlowInstance(flowInstance),
 		_mounting_type(type)
 	 {
 		// Initialize parameter handles dynamically
@@ -199,7 +199,6 @@
 
 		if (param_get(_param_ekf2_of_id, &tmp_int) == PX4_OK) {
 			getOpticalFlowInstance(tmp_int);
-
 		}
 		updateParams();
 	 }
@@ -298,7 +297,7 @@
 
 	 void setMountingType(MountingType type) { _mounting_type = type; }
 
-	 static constexpr uint8_t getInstance() { return 0; }
+	//  static constexpr uint8_t getInstance() { return kFlowInstance; }
 
  private:
 
@@ -378,6 +377,7 @@
 		starting,
 		active,
 	};
+	int kFlowInstance;
 
 	State _state{State::stopped};
 	MountingType _mounting_type{MountingType::CUSTOM};
@@ -410,7 +410,6 @@
 	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_velocity_pub{ORB_ID(estimator_aid_src_optical_flow_velocity)};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_velocity_vel_pub{ORB_ID(estimator_optical_flow_velocity_vel)};
 
-	const uint8_t kFlowInstance = 0;
 
 	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow)};
 	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor)};

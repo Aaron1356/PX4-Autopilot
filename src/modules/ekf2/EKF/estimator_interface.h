@@ -298,8 +298,7 @@ public:
 	void enableControlStatusAuxGpos() { _control_status.flags.aux_gpos = true; }
 	void disableControlStatusAuxGpos() { _control_status.flags.aux_gpos = false; }
 
-	void enableControlStatusOpticalFlowVelocity() { _control_status.flags.optical_flow_velocity = true; }
-	void disableControlStatusOpticalFlowVelocity() { _control_status.flags.optical_flow_velocity = false; }
+
 
 	// get EKF internal fault status
 	const fault_status_u &fault_status() const { return _fault_status; }
@@ -495,6 +494,22 @@ protected:
 	uint8_t _drag_sample_count{0};	// number of drag specific force samples assumulated at the filter prediction rate
 	float _drag_sample_time_dt{0.0f};	// time integral across all samples used to form _drag_down_sampled (sec)
 #endif // CONFIG_EKF2_DRAG_FUSION
+
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
+	bool _cs_optical_flow_status[10] {false};
+	void enableControlStatusOpticalFlowVelocity(int num) {
+                _cs_optical_flow_status[num] = true;
+                _control_status.flags.optical_flow_velocity = true;
+        }
+
+        void disableControlStatusOpticalFlowVelocity(int num) {
+                bool status = false;
+                for(int i = 0; i< 10; i++){
+                        status = status && _cs_optical_flow_status[i];
+                }
+                _control_status.flags.optical_flow_velocity = status;
+        }
+#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 	void printBufferAllocationFailed(const char *buffer_name);
 
