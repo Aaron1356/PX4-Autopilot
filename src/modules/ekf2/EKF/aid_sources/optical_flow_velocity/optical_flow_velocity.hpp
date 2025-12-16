@@ -67,7 +67,7 @@
 		 CUSTOM    // Custom orientation defined by parameters
 	 };
 
-	 OpticalFlowBVelocity(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
+	 OpticalFlowVelocity(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),kFlowInstance(flowInstance),
 		_mounting_type(type)
 	 {
