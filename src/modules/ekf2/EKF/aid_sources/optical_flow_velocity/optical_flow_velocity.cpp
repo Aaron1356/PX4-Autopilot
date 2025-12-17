@@ -226,9 +226,14 @@
 	// Get velocity update mask (which velocity components to use)
 	const float base_noise = math::max(_ekf2_of_noise, 0.01f);
 	const uint8_t vel_update_mask = getVelocityUpdateMask();
+
+	const float quality_normalized = math::constrain((sample.flow_quality / 150.0f), 0.0f, 1.0f);
+	const float quality_scale = 1.0f + 9.0f * (1.0f - quality_normalized);
+
 	for (uint8_t i = 0 ; i < 3; i++){
 		if(vel_update_mask & (1 << i)) {
-			measurement_var_scaled(i) = base_noise * base_noise;
+			float scaled_noise = base_noise * quality_scale;
+			measurement_var_scaled(i) = scaled_noise;
 		} else {
 			measurement_var_scaled(i) = 1e6f;
 		}
@@ -323,9 +328,12 @@
 		     aid_src.fused = true;
 		     aid_src.time_last_fuse = imu_delayed.time_us;
 
-		     // Better Notion of if this state is correct, need to sure that partial is tiimestamped
+		     // Better Notion of if this state is correct, need to sure that partial is timestamped
 		     ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
-		     ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
+		     // Accounts for when tthe sensor is pointing in the Downward or Upward Directions
+		     if(!(vel_update_mask & 0x4)){
+		     	ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
+		     }
 		 }
 
 		 if (isTimedOut(aid_src.time_last_fuse, imu_delayed.time_us, ekf._params.no_aid_timeout_max)) {
