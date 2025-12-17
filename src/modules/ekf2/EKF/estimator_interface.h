@@ -496,6 +496,7 @@ protected:
 #endif // CONFIG_EKF2_DRAG_FUSION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
+        // Adjusting the control Status values
 	bool _cs_optical_flow_status[10] {false};
 	void enableControlStatusOpticalFlowVelocity(int num) {
                 _cs_optical_flow_status[num] = true;
@@ -505,7 +506,7 @@ protected:
         void disableControlStatusOpticalFlowVelocity(int num) {
                 bool status = false;
                 for(int i = 0; i< 10; i++){
-                        status = status && _cs_optical_flow_status[i];
+                        status = status || _cs_optical_flow_status[i];
                 }
                 _control_status.flags.optical_flow_velocity = status;
         }
