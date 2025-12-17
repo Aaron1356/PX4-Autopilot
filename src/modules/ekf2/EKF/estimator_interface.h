@@ -505,7 +505,7 @@ protected:
         void disableControlStatusOpticalFlowBase(int num) {
                 bool status = false;
                 for(int i = 0; i< 10; i++){
-                        status = status && _cs_optical_flow_status[i];
+                        status = status || _cs_optical_flow_status[i];
                 }
                 _control_status.flags.optical_flow_base = status;
         }
