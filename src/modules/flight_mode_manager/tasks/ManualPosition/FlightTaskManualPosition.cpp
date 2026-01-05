@@ -133,12 +133,7 @@ void FlightTaskManualPosition::_updateSetpoints()
 	FlightTaskManualAltitude::_updateSetpoints(); // needed to get yaw and setpoints in z-direction
 	_acceleration_setpoint.setNaN(); // don't use the horizontal setpoints from FlightTaskAltitude
 
-	if (_param_mpc_vel_only.get()) {
-		_position_setpoint(0) = NAN;
-		_position_setpoint(1) = NAN;
-	} else {
-		_updateXYlock(); // check for position lock
-	}
+	_updateXYlock(); // check for position lock
 
 	_weathervane.update();
 
