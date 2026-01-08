@@ -77,24 +77,7 @@
 	     break;
 
 	 case MountingType::CUSTOM:
-	     {
-		 // For custom mounting, analyze the rotation matrix to determine which axes to use
-		 const matrix::Dcmf R_to_body = calculateSensorToBodyRotation();
-		 const Vector3f z_axis_body = R_to_body.col(2); // Sensor's z-axis in body frame
-
-		 // If z component is dominant in sensor's z-axis, we're mainly looking up or down
-		 // In this case, X and Y updates are most reliable
-		 if (fabsf(z_axis_body(2)) > 0.7f) {
-		     update_mask = 0b011; // Update X and Y
-		 }
-		 // If x or y component is dominant, we're looking sideways
-		 // Use the axes orthogonal to the main viewing direction
-		 else if (fabsf(z_axis_body(0)) > fabsf(z_axis_body(1))) {
-		     update_mask = 0b110; // Update Y and Z
-		 } else {
-		     update_mask = 0b101; // Update X and Z
-		 }
-	     }
+	     update_mask = 0b111;
 	     break;
      }
 

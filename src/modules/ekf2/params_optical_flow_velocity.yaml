@@ -76,8 +76,8 @@ parameters:
       num_instances: *max_num_sensor_instances
     EKF2_OFV${i}_POS_X:
       description:
-          short: Position Offset X
-          long: Set the X offset of the optical Flow sensor to be used in the Optical Flow Upward object
+          short: Position Offset X (Meters)
+          long: Set the X offset of the optical Flow sensor to be used in the Optical Flow object.
       type: float
       default: 0.0
       min: -1000.0
@@ -86,8 +86,8 @@ parameters:
       num_instances: *max_num_sensor_instances
     EKF2_OFV${i}_POS_Y:
       description:
-          short: Position Offset Y
-          long: Set the Y offset of the optical Flow sensor to be used in the Optical Flow Upward object
+          short: Position Offset Y (Meters)
+          long: Set the Y offset of the optical Flow sensor to be used in the Optical Flow object
       type: float
       default: 0.0
       min: -1000.0
@@ -96,8 +96,8 @@ parameters:
       num_instances: *max_num_sensor_instances
     EKF2_OFV${i}_POS_Z:
       description:
-        short: Position Offset Z
-        long: Set the Z offset of the optical Flow sensor to be used in the Optical Flow Upward object
+        short: Position Offset Z (Meters)
+        long: Set the Z offset of the optical Flow sensor to be used in the Optical Flow object
       type: float
       default: 0.0
       min: -1000.0
