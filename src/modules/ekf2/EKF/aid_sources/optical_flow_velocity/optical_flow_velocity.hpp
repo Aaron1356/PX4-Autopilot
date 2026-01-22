@@ -194,7 +194,6 @@
 			_ekf2_obs_var_p = tmp_float;
 		}
 
-		printf("Doing something here in Velocity Optical Flow\n");
 		if (param_get(_param_ekf2_ds_id, &tmp_int) == PX4_OK) {
 			getDistanceSensorInstance(tmp_int);
 		}
@@ -224,7 +223,7 @@
 				}
 			}
 			// printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
-			printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
+			// printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
 
 		}
 	 }
@@ -240,7 +239,7 @@
 			if(optical_flow_subs[i].copy(&topic)){
 				if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_of_id)
 				{
-					printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
+					// printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
 					_sensor_optical_flow_sub.ChangeInstance(i);
 					subOpticalInstanceSet = true;
 					break;
@@ -270,10 +269,10 @@
 
 		_h_flow_y = (-_sensor_x_in_body).normalized();
 
-		printf("Sensor %d: h_flow_x = [%.3f, %.3f, %.3f], h_flow_y = [%.3f, %.3f, %.3f]\n",
-		       kFlowInstance,
-		       (double)_h_flow_x(0), (double)_h_flow_x(1), (double)_h_flow_x(2),
-		       (double)_h_flow_y(0), (double)_h_flow_y(1), (double)_h_flow_y(2));
+		// printf("Sensor %d: h_flow_x = [%.3f, %.3f, %.3f], h_flow_y = [%.3f, %.3f, %.3f]\n",
+		//        kFlowInstance,
+		//        (double)_h_flow_x(0), (double)_h_flow_x(1), (double)_h_flow_x(2),
+		//        (double)_h_flow_y(0), (double)_h_flow_y(1), (double)_h_flow_y(2));
 	}
 
 	uint8_t getMinQualityThreshold() const
