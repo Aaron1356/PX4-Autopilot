@@ -110,11 +110,11 @@
 		return;
 	}
 
-     if (_sensor_optical_flow_sub.updated()) {
-	 sensor_optical_flow_s sensor_optical_flow{};
-	 _sensor_optical_flow_sub.copy(&sensor_optical_flow);
+    if (_sensor_optical_flow_sub.updated()) {
+	sensor_optical_flow_s sensor_optical_flow{};
+	_sensor_optical_flow_sub.copy(&sensor_optical_flow);
 
-	 float range_m = NAN;
+	float range_m = NAN;
 
 	{
 	    distance_sensor_s distance_sensor{};
@@ -129,7 +129,6 @@
 	if (!PX4_ISFINITE(range_m)) {
 		return;
 	}
-	// printf("Updating Optical Flow velocity");
 
 	// NOTE: the EKF uses the reverse sign convention to the flow sensor. EKF assumes positive LOS rate
 	// is produced by a RH rotation of the image about the sensor axis.
@@ -271,7 +270,6 @@
 
 	aid_src.device_id = _ekf2_ds_id;
 	aid_src.timestamp = hrt_absolute_time();
-	// printf("Publish Aid Src Topic");
 	_estimator_aid_src_optical_flow_velocity_pub.publish(aid_src);
 
 	// Publish optical flow velocity
@@ -325,7 +323,6 @@
 		gyro_rate.copyTo(flow_vel.gyro_rate);
 		ref_body_rate.copyTo(flow_vel.ref_gyro);
 		flow_vel.timestamp = hrt_absolute_time();
-		// printf("Publish Flow Velocity Topic");
 		_estimator_optical_flow_velocity_vel_pub.publish(flow_vel);
 	}
 
