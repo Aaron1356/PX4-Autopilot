@@ -66,6 +66,7 @@
 
 	// Innovation (measurement residual)
 	const float innovation = predicted - measurement;
+	// const float innovation = measurement - predicted;
 
 	// Innovation variance: H * P * H^T + R
 	// Using matrix operations as PX4 does elsewhere
@@ -174,7 +175,7 @@
 		const Vector2f flow_compensated_xy_rad = sample.flow_xy_rad - sample.gyro_integral.xy();
 
 		const float vel_from_flow_x = sample.range_m * flow_compensated_xy_rad(0) / sample.flow_dt;
-        const float vel_from_flow_y = -sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
+        const float vel_from_flow_y = sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
 
 		// Compute observation variance
 		const float obs_var = computeObservationVariance(sample.range_m, sample.flow_quality);
@@ -213,38 +214,31 @@
 	    }
 	    break;
 
-	 case State::active:
-	    if (continuing_conditions) {
-			_fused_flow_x = fuseScalarVelocity(ekf, _h_flow_x, vel_from_flow_x, obs_var, imu_delayed.time_us);
-			_fused_flow_y = fuseScalarVelocity(ekf, _h_flow_y, vel_from_flow_y, obs_var, imu_delayed.time_us);
+	case State::active:
+    	if (continuing_conditions) {
+    	    _fused_flow_x = fuseScalarVelocity(ekf, _h_flow_x, vel_from_flow_x, obs_var, sample.flow_quality);
+    	    _fused_flow_y = fuseScalarVelocity(ekf, _h_flow_y, vel_from_flow_y, obs_var, sample.flow_quality);
 
-			if (_fused_flow_x || _fused_flow_y) {
-					ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
+    	    if (_fused_flow_x || _fused_flow_y) {
+    	        ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
 
-					// Check if this sensor contributes to vertical velocity
-					// (if h_flow_x or h_flow_y has significant Z component)
-					if (fabsf(_h_flow_x(2)) > 0.3f || fabsf(_h_flow_y(2)) > 0.3f) {
-						ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
-					}
-				}
+    	        // Check if this sensor contributes to vertical velocity
+    	        if (fabsf(_h_flow_x(2)) > 0.3f || fabsf(_h_flow_y(2)) > 0.3f) {
+    	            ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
+    	        }
+    	    }
+    	    // Stay in active state - DO NOT disable here!
 
+    	} else {
+    	    // Conditions no longer met - now we can disable
+    	    ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
+    	    _state = State::stopped;
+    	}
+    	break;
 
-		if (isTimedOut(ekf._time_last_hor_vel_fuse, imu_delayed.time_us, ekf._params.no_aid_timeout_max)) {
-		    if (ekf.isOnlyActiveSourceOfHorizontalPositionAiding(ekf.control_status_flags().optical_flow_velocity)) {
-			// TODO: Handle reset if this is the only source of horizontal aiding
-		    } else {
-				ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
-				_state = State::stopped;
-		    }
-		} else {
-			ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
-				_state = State::stopped;
-		}
+	default:
+	    break;
 	}
-
-	 default:
-	     break;
-	 }
 
  #if defined(MODULE_NAME)
 

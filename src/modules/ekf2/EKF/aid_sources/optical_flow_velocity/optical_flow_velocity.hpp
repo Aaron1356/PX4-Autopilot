@@ -193,14 +193,6 @@
 			_ekf2_obs_var_p = tmp_float;
 		}
 
-		printf("Optical Flow Velocity instance %d parameters updated\n", kFlowInstance);
-		printf("[OFV%d] Configuration: roll=%.1f, pitch=%.1f, yaw=%.1f deg\n",
-		       kFlowInstance, (double)_ekf2_of_roll, (double)_ekf2_of_pitch, (double)_ekf2_of_yaw);
-		printf("[OFV%d] Position: x=%.3f, y=%.3f, z=%.3f m\n",
-		       kFlowInstance, (double)_ekf2_of_pos_x, (double)_ekf2_of_pos_y, (double)_ekf2_of_pos_z);
-		printf("[OFV%d] OF_ID=%d, DS_ID=%d\n",
-		       kFlowInstance, (int)_ekf2_of_id, (int)_ekf2_ds_id);
-
 		if (param_get(_param_ekf2_ds_id, &tmp_int) == PX4_OK) {
 			getDistanceSensorInstance(tmp_int);
 		}
@@ -217,7 +209,6 @@
 		distance_sensor_s topic;
 		_ekf2_ds_id = tmp_int;
 		uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
-		// printf("Device Searching for %d\n", (int)(_ekf2_ds_id));
 		if(subDistanceInstanceSet){
 			return;
 		}
@@ -231,8 +222,6 @@
 					break;
 				}
 			}
-			// printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
-			// printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
 
 		}
 	}
@@ -275,33 +264,7 @@
 		_sensor_z_in_body = _R_sensor_to_body.col(2);  // Sensor Z axis (viewing direction) in body frame
 
 		_h_flow_x = _sensor_y_in_body.normalized();
-
-		_h_flow_y = (-_sensor_x_in_body).normalized();
-
-		printf("[OFV%d] ========== Sensor Rotation Computed ==========\n", kFlowInstance);
-		printf("[OFV%d] Euler angles: roll=%.1f, pitch=%.1f, yaw=%.1f deg\n",
-		       kFlowInstance, (double)_ekf2_of_roll, (double)_ekf2_of_pitch, (double)_ekf2_of_yaw);
-		printf("[OFV%d] R_sensor_to_body:\n", kFlowInstance);
-		printf("[OFV%d]   [%7.3f %7.3f %7.3f]\n", kFlowInstance,
-		       (double)_R_sensor_to_body(0,0), (double)_R_sensor_to_body(0,1), (double)_R_sensor_to_body(0,2));
-		printf("[OFV%d]   [%7.3f %7.3f %7.3f]\n", kFlowInstance,
-		       (double)_R_sensor_to_body(1,0), (double)_R_sensor_to_body(1,1), (double)_R_sensor_to_body(1,2));
-		printf("[OFV%d]   [%7.3f %7.3f %7.3f]\n", kFlowInstance,
-		       (double)_R_sensor_to_body(2,0), (double)_R_sensor_to_body(2,1), (double)_R_sensor_to_body(2,2));
-		printf("[OFV%d] Sensor axes in body frame:\n", kFlowInstance);
-		printf("[OFV%d]   X (col0): [%.3f, %.3f, %.3f]\n", kFlowInstance,
-		       (double)_sensor_x_in_body(0), (double)_sensor_x_in_body(1), (double)_sensor_x_in_body(2));
-		printf("[OFV%d]   Y (col1): [%.3f, %.3f, %.3f]\n", kFlowInstance,
-		       (double)_sensor_y_in_body(0), (double)_sensor_y_in_body(1), (double)_sensor_y_in_body(2));
-		printf("[OFV%d]   Z (col2, viewing): [%.3f, %.3f, %.3f]\n", kFlowInstance,
-		       (double)_sensor_z_in_body(0), (double)_sensor_z_in_body(1), (double)_sensor_z_in_body(2));
-		printf("[OFV%d] Measurement directions:\n", kFlowInstance);
-		printf("[OFV%d]   h_flow_x (flow_x measures vel along): [%.3f, %.3f, %.3f]\n", kFlowInstance,
-		       (double)_h_flow_x(0), (double)_h_flow_x(1), (double)_h_flow_x(2));
-		printf("[OFV%d]   h_flow_y (flow_y measures vel along): [%.3f, %.3f, %.3f]\n", kFlowInstance,
-		       (double)_h_flow_y(0), (double)_h_flow_y(1), (double)_h_flow_y(2));
-		printf("[OFV%d] ================================================\n", kFlowInstance);
-
+		_h_flow_y = _sensor_x_in_body.normalized();
 		// printf("Sensor %d: h_flow_x = [%.3f, %.3f, %.3f], h_flow_y = [%.3f, %.3f, %.3f]\n",
 		//        kFlowInstance,
 		//        (double)_h_flow_x(0), (double)_h_flow_x(1), (double)_h_flow_x(2),
