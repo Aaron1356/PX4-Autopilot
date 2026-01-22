@@ -117,6 +117,8 @@
 		_param_ekf2_ds_id = param_find(param_name);
 
 		_estimator_aid_src_optical_flow_velocity_pub.advertise();
+		_estimator_optical_flow_velocity_vel_pub.advertise();
+
 		printf("Starting Optical Flow instance: %d\n", flowInstance);
 		updateParameters();
 	 }
@@ -221,8 +223,8 @@
 					break;
 				}
 			}
-			printf("Device id @ %d : %d\n", i, (int)(topic.device_id));
 			// printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
+			printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
 
 		}
 	 }
@@ -247,21 +249,31 @@
 		}
 	 }
 
-	 Vector3f getAxisDependentRangeScale(float range_m) const
+	/**
+	 * @brief Pre-compute sensor to body rotation matrix and measurement directions
+	 */
+	void computeSensorRotation()
 	{
-		const matrix::Dcmf R_to_body = calculateSensorToBodyRotation();
-		const Vector3f z_axis_body = R_to_body.col(2);
+		const float roll_rad = math::radians(_ekf2_of_roll);
+		const float pitch_rad = math::radians(_ekf2_of_pitch);
+		const float yaw_rad = math::radians(_ekf2_of_yaw);
 
-		Vector3f range_scale;
+		// Sensor to body rotation matrix
+		_R_sensor_to_body = matrix::Dcmf(matrix::Eulerf(roll_rad, pitch_rad, yaw_rad));
 
-		// For each body axis, scale based on how much the range affects that velocity
-		for (uint8_t i = 0; i < 3; i++) {
-			// Higher z_axis component in this direction = more sensitive to range errors
-			float sensitivity = fabsf(z_axis_body(i));
-			range_scale(i) = 1.0f + (range_m / _ekf2_obs_var_p) * sensitivity * sensitivity;
-		}
+		// Extract sensor axes in body frame
+		_sensor_x_in_body = _R_sensor_to_body.col(0);  // Sensor X axis in body frame
+		_sensor_y_in_body = _R_sensor_to_body.col(1);  // Sensor Y axis in body frame
+		_sensor_z_in_body = _R_sensor_to_body.col(2);  // Sensor Z axis (viewing direction) in body frame
 
-		return range_scale;
+		_h_flow_x = _sensor_y_in_body.normalized();
+
+		_h_flow_y = (-_sensor_x_in_body).normalized();
+
+		printf("Sensor %d: h_flow_x = [%.3f, %.3f, %.3f], h_flow_y = [%.3f, %.3f, %.3f]\n",
+		       kFlowInstance,
+		       (double)_h_flow_x(0), (double)_h_flow_x(1), (double)_h_flow_x(2),
+		       (double)_h_flow_y(0), (double)_h_flow_y(1), (double)_h_flow_y(2));
 	}
 
 	uint8_t getMinQualityThreshold() const
@@ -270,24 +282,37 @@
 
 		switch (mounting_type) {
 			case MountingType::DOWNWARD:
-			return 50; // Most reliable - lower threshold
+				return 50; // Most reliable - lower threshold
 
 			case MountingType::FORWARD:
 			case MountingType::SIDEWAYS:
-			return 80; // Less reliable for height - higher threshold
+				return 80; // Less reliable for height - higher threshold
 
 			case MountingType::UPWARD:
-			return 100; // Least reliable - highest threshold
+				return 100; // Least reliable - highest threshold
 
-			case MountingType::CUSTOM:
-			// Scale based on how much we rely on range measurement
-			const matrix::Dcmf R_to_body = calculateSensorToBodyRotation();
-			const Vector3f z_axis_body = R_to_body.col(2);
-			float down_component = fabsf(z_axis_body(2));
-			return (uint8_t)(50 + 50 * (1.0f - down_component)); // 50-100 range
+			default:
+				// Scale based on how much we rely on range measurement
+				float down_component = fabsf(_sensor_z_in_body(2));
+				return (uint8_t)(50 + 50 * (1.0f - down_component));
 		}
+	}
 
-		return 100;
+	/**
+	 * @brief Compute observation variance with range scaling
+	 */
+	float computeObservationVariance(float range_m, uint8_t quality) const
+	{
+		const float base_var = _ekf2_of_noise * _ekf2_of_noise;
+
+		// Quality scaling (lower quality = higher variance)
+		const float quality_normalized = math::constrain((float)quality / 255.0f, 0.1f, 1.0f);
+		const float quality_scale = 1.0f / (quality_normalized * quality_normalized);
+
+		// Range scaling (larger range = higher variance)
+		const float range_scale = 1.0f + (range_m * range_m) / (_ekf2_obs_var_p * _ekf2_obs_var_p);
+
+		return base_var * quality_scale * range_scale;
 	}
 
 	 const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
@@ -296,8 +321,6 @@
 	 float test_ratio_filtered() const { return _test_ratio_filtered; }
 
 	 void setMountingType(MountingType type) { _mounting_type = type; }
-
-	//  static constexpr uint8_t getInstance() { return kFlowInstance; }
 
  private:
 
@@ -332,32 +355,19 @@
 	param_t _param_ekf2_of_id;
 	param_t _param_ekf2_ds_id;
 
+	matrix::Dcmf _R_sensor_to_body{};
+	Vector3f _sensor_x_in_body{};
+	Vector3f _sensor_y_in_body{};
+	Vector3f _sensor_z_in_body{};
+	Vector3f _h_flow_x{};
+	Vector3f _h_flow_y{};
+
 	bool isTimedOut(uint64_t last_sensor_timestamp, uint64_t time_delayed_us, uint64_t timeout_period) const
 	{
 		return (last_sensor_timestamp == 0) || (last_sensor_timestamp + timeout_period < time_delayed_us);
 	}
 
-	/**
-	 * @brief Get velocity update mask based on mounting type and angles
-	 * This determines which velocity components (x,y,z) should be updated
-	 * @return Bit mask with bits set for components that should be updated
-	 */
-	uint8_t getVelocityUpdateMask() const;
-
-	/**
-	 * @brief Transform optical flow measurements to body frame velocity
-	 * @param flow_compensated_xy_rad Compensated flow measurements
-	 * @param range_m Range measurement in meters
-	 * @param flow_dt Flow integration time in seconds
-	 * @return Velocity in body frame
-	 */
-	Vector3f flowToBodyVelocity(const Vector2f &flow_compensated_xy_rad, float range_m, float flow_dt) const;
-
-	/**
-	 * Calculate the rotation matrix from sensor to body frame
-	 * Accounts for orthogonal and non-orthogonal mounting
-	 */
-	matrix::Dcmf calculateSensorToBodyRotation() const;
+	bool fuseScalarVelocity(Ekf &ekf, const Vector3f &h_body, float measurement, float variance, uint8_t quality);
 
 	struct OpticalFlowSample {
 		uint64_t    time_us{};   ///< timestamp of the integration period midpoint (uSec)
@@ -377,18 +387,15 @@
 		starting,
 		active,
 	};
-	int kFlowInstance;
+	int kFlowInstance{0};
 
 	State _state{State::stopped};
 	MountingType _mounting_type{MountingType::CUSTOM};
 
 	float _test_ratio_filtered{INFINITY};
 
-	matrix::Vector3f _flow_gyro_bias{};
 	matrix::Vector2f _vel_ne_innovation{};
 	matrix::Vector2f _vel_ne_test_ratio{};
-
-	Vector2f _flow_vel_body{};
 
 	static constexpr float _kSensorLpfTimeConstant = 0.09f;
 	AlphaFilter<Vector2f> _flow_sensor_vel_lpf{0.01, _kSensorLpfTimeConstant}; ///< filtered velocity from corrected flow measurement (body frame)(m/s)
@@ -398,8 +405,11 @@
 	math::WelfordMeanVector<float, 2> _flow_mean{};
 	math::WelfordMeanVector<float, 2> _flow_sensor_vel_mean{};
 
-	bool subOpticalInstanceSet = false;
-	bool subDistanceInstanceSet = false;
+	bool subOpticalInstanceSet{false};
+	bool subDistanceInstanceSet{false};
+
+	bool _fused_flow_x{false};
+	bool _fused_flow_y{false};
 
 #if defined(MODULE_NAME)
 	struct reset_counters_s {
@@ -409,7 +419,6 @@
 
 	uORB::PublicationMulti<estimator_aid_source3d_s> _estimator_aid_src_optical_flow_velocity_pub{ORB_ID(estimator_aid_src_optical_flow_velocity)};
 	uORB::PublicationMulti<vehicle_optical_flow_vel_s> _estimator_optical_flow_velocity_vel_pub{ORB_ID(estimator_optical_flow_velocity_vel)};
-
 
 	uORB::Subscription _sensor_optical_flow_sub{ORB_ID(sensor_optical_flow)};
 	uORB::Subscription _distance_sensor_sub{ORB_ID(distance_sensor)};
