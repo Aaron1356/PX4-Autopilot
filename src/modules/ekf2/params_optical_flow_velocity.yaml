@@ -128,8 +128,8 @@ parameters:
 
     EKF2_OFV${i}_OF_ID:
       description:
-          short: Accelerometer ${i} calibration device ID
-          long: Device ID of the accelerometer this calibration applies to.
+          short: Optical Flow ${i} calibration device ID
+          long: Device ID of the Optical Flow Sensor used for instance ${i} for Multi-optical Flow.
       category: System
       type: int32
       default: 0
@@ -139,8 +139,8 @@ parameters:
 
     EKF2_OFV${i}_DS_ID:
       description:
-          short: Accelerometer ${i} calibration device ID
-          long: Device ID of the accelerometer this calibration applies to.
+          short: Distance Sensor ${i} calibration device ID
+          long: Device ID of the Distance sensor used for instance ${i} for Multi-optical Flow.
       category: System
       type: int32
       default: 0

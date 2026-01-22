@@ -58,19 +58,19 @@
  class OpticalFlowVelocity : public ModuleParams
  {
  public:
-	 // Define sensor mounting type
-	 enum class MountingType {
+	// Define sensor mounting type
+	enum class MountingType {
 		 FORWARD,  // Facing forward (default)
 		 SIDEWAYS, // Facing sideways
 		 UPWARD,   // Facing upward
 		 DOWNWARD, // Facing downward
 		 CUSTOM    // Custom orientation defined by parameters
-	 };
+	};
 
-	 OpticalFlowVelocity(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
+	OpticalFlowVelocity(int flowInstance =0,MountingType type = MountingType::CUSTOM) :
 		ModuleParams(nullptr),kFlowInstance(flowInstance),
 		_mounting_type(type)
-	 {
+	{
 		// Initialize parameter handles dynamically
 		char param_name[17];
 
@@ -121,11 +121,11 @@
 
 		printf("Starting Optical Flow instance: %d\n", flowInstance);
 		updateParameters();
-	 }
+	}
 
 	 ~OpticalFlowVelocity() = default;
 
-	 static OpticalFlowVelocity* create_instance(int instance_num){
+	static OpticalFlowVelocity* create_instance(int instance_num){
 		param_t control_bit = PARAM_INVALID;
 		char param_name[17];
 		int32_t tmp_int;
@@ -136,12 +136,12 @@
 			return new OpticalFlowVelocity(instance_num);
 		}
 		return nullptr;
-	 }
+	}
 
-	 void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
+	void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
 
-	 void updateParameters()
-	 {
+	void updateParameters()
+	{
 		// Get parameter values using handles
 		int32_t tmp_int;
 		float tmp_float;
@@ -202,9 +202,9 @@
 			getOpticalFlowInstance(tmp_int);
 		}
 		updateParams();
-	 }
+	}
 
-	 void getDistanceSensorInstance(int32_t tmp_int){
+	void getDistanceSensorInstance(int32_t tmp_int){
 		distance_sensor_s topic;
 		_ekf2_ds_id = tmp_int;
 		uORB::SubscriptionMultiArray<distance_sensor_s> distance_sensor_subs{ORB_ID::distance_sensor};
@@ -226,9 +226,9 @@
 			// printf("Device id @ %d : %d\n", i, (int)((topic.device_id >> 8) & 0xFF));
 
 		}
-	 }
+	}
 
-	 void getOpticalFlowInstance(int32_t tmp_int){
+	void getOpticalFlowInstance(int32_t tmp_int){
 		sensor_optical_flow_s topic;
 		_ekf2_of_id = tmp_int;
 		uORB::SubscriptionMultiArray<sensor_optical_flow_s> optical_flow_subs{ORB_ID::sensor_optical_flow};
@@ -239,14 +239,14 @@
 			if(optical_flow_subs[i].copy(&topic)){
 				if((int)((topic.device_id >> 8) & 0xFF) == (int)_ekf2_of_id)
 				{
-					// printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
+					printf("Optical Flow Sensor Looking at: %d\n", (int)((topic.device_id >> 8) & 0xFF));
 					_sensor_optical_flow_sub.ChangeInstance(i);
 					subOpticalInstanceSet = true;
 					break;
 				}
 			}
 		}
-	 }
+	}
 
 	/**
 	 * @brief Pre-compute sensor to body rotation matrix and measurement directions
@@ -314,12 +314,12 @@
 		return base_var * quality_scale * range_scale;
 	}
 
-	 const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
-	 const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
+	const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
+	const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
 
-	 float test_ratio_filtered() const { return _test_ratio_filtered; }
+	float test_ratio_filtered() const { return _test_ratio_filtered; }
 
-	 void setMountingType(MountingType type) { _mounting_type = type; }
+	void setMountingType(MountingType type) { _mounting_type = type; }
 
  private:
 
