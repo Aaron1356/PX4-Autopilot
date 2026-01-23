@@ -48,12 +48,12 @@
     float variance,
     uint8_t quality)
 {
-    // Transform h from body to NED frame for state vector
-    const Vector3f h_ned = ekf._R_to_earth * h_body;
+	// Transform h from body to NED frame for state vector
+	const Vector3f h_ned = ekf._R_to_earth * h_body;
 
-    // Build H vector (maps state to measurement)
-    Ekf::VectorState H;
-    H.setZero();
+	// Build H vector (maps state to measurement)
+	Ekf::VectorState H;
+	H.setZero();
 
 	static constexpr uint8_t VEL_NED_IDX = 3;
 	H(VEL_NED_IDX + 0) = h_ned(0);  // d(measurement)/d(vel_N)
@@ -65,8 +65,12 @@
 	const float predicted = h_body.dot(vel_body_est);
 
 	// Innovation (measurement residual)
-	const float innovation = predicted - measurement;
-	// const float innovation = measurement - predicted;
+	// const float innovation = predicted - measurement;
+	const float innovation = measurement - predicted;
+
+	printf("[OFV] h=[%.2f,%.2f,%.2f] meas=%.2f pred=%.2f innov=%.2f\n",
+       (double)h_body(0), (double)h_body(1), (double)h_body(2),
+       (double)measurement, (double)predicted, (double)innovation);
 
 	// Innovation variance: H * P * H^T + R
 	// Using matrix operations as PX4 does elsewhere
@@ -175,7 +179,7 @@
 		const Vector2f flow_compensated_xy_rad = sample.flow_xy_rad - sample.gyro_integral.xy();
 
 		const float vel_from_flow_x = sample.range_m * flow_compensated_xy_rad(0) / sample.flow_dt;
-        const float vel_from_flow_y = sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
+        	const float vel_from_flow_y = sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
 
 		// Compute observation variance
 		const float obs_var = computeObservationVariance(sample.range_m, sample.flow_quality);
