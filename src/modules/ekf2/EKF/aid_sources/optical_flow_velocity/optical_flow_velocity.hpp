@@ -265,10 +265,6 @@
 
 		_h_flow_x = _sensor_y_in_body.normalized();
 		_h_flow_y = _sensor_x_in_body.normalized();
-		// printf("Sensor %d: h_flow_x = [%.3f, %.3f, %.3f], h_flow_y = [%.3f, %.3f, %.3f]\n",
-		//        kFlowInstance,
-		//        (double)_h_flow_x(0), (double)_h_flow_x(1), (double)_h_flow_x(2),
-		//        (double)_h_flow_y(0), (double)_h_flow_y(1), (double)_h_flow_y(2));
 	}
 
 	uint8_t getMinQualityThreshold() const

@@ -65,12 +65,8 @@
 	const float predicted = h_body.dot(vel_body_est);
 
 	// Innovation (measurement residual)
-	// const float innovation = predicted - measurement;
-	const float innovation = measurement - predicted;
-
-	printf("[OFV] h=[%.2f,%.2f,%.2f] meas=%.2f pred=%.2f innov=%.2f\n",
-       (double)h_body(0), (double)h_body(1), (double)h_body(2),
-       (double)measurement, (double)predicted, (double)innovation);
+	const float innovation = predicted - measurement;
+	// const float innovation = measurement - predicted;
 
 	// Innovation variance: H * P * H^T + R
 	// Using matrix operations as PX4 does elsewhere
@@ -95,8 +91,26 @@
     // Kalman gain
     Ekf::VectorState K = ekf.P * H / innov_var;
 
-    // State update
-    ekf.measurementUpdate(K, H, variance, innovation);
+    // const Vector3f vel_before = ekf._state.vel;
+	// printf("[OFV] BEFORE: vel_ned=[%.2f, %.2f, %.2f]\n",
+	// 	(double)vel_before(0), (double)vel_before(1), (double)vel_before(2));
+	// printf("[OFV] h=[%.2f,%.2f,%.2f] meas=%.2f pred=%.2f innov=%.2f\n",
+	// 	(double)h_body(0), (double)h_body(1), (double)h_body(2),
+	// 	(double)measurement, (double)predicted, (double)innovation);
+	// printf("[OFV] K_vel=[%.4f, %.4f, %.4f] innov_var=%.4f\n",
+	// 	(double)K(VEL_NED_IDX), (double)K(VEL_NED_IDX+1), (double)K(VEL_NED_IDX+2),
+	// 	(double)innov_var);
+
+	ekf.measurementUpdate(K, H, variance, innovation);
+
+	// // Add AFTER measurementUpdate call:
+	// const Vector3f vel_after = ekf._state.vel;
+	// printf("[OFV] AFTER:  vel_ned=[%.2f, %.2f, %.2f]\n",
+	// 	(double)vel_after(0), (double)vel_after(1), (double)vel_after(2));
+	// printf("[OFV] DELTA:  [%.4f, %.4f, %.4f]\n",
+	// 	(double)(vel_after(0)-vel_before(0)),
+	// 	(double)(vel_after(1)-vel_before(1)),
+	// 	(double)(vel_after(2)-vel_before(2)));
 
 	return true;
 }
@@ -161,8 +175,8 @@
 
 	    _ringbuffer.push(sample);
 	    _time_last_buffer_push = imu_delayed.time_us;
-	 }
-     }
+	}
+    }
 
  #endif // MODULE_NAME
 
@@ -179,7 +193,7 @@
 		const Vector2f flow_compensated_xy_rad = sample.flow_xy_rad - sample.gyro_integral.xy();
 
 		const float vel_from_flow_x = sample.range_m * flow_compensated_xy_rad(0) / sample.flow_dt;
-        	const float vel_from_flow_y = sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
+        const float vel_from_flow_y = sample.range_m * flow_compensated_xy_rad(1) / sample.flow_dt;
 
 		// Compute observation variance
 		const float obs_var = computeObservationVariance(sample.range_m, sample.flow_quality);
@@ -198,6 +212,11 @@
 
 		_fused_flow_x = false;
 		_fused_flow_y = false;
+
+		// printf("[OFV%d] h_flow_x = [%.3f, %.3f, %.3f], h_flow_y = [%.3f, %.3f, %.3f]\n",
+		//        kFlowInstance,
+		//        (double)_h_flow_x(0), (double)_h_flow_x(1), (double)_h_flow_x(2),
+		//        (double)_h_flow_y(0), (double)_h_flow_y(1), (double)_h_flow_y(2));
 
 		// State machine to manage the optical flow fusion
 		switch (_state) {
@@ -259,8 +278,8 @@
 	aid_src.observation_variance[1] = obs_var;
 	aid_src.observation_variance[2] = 0.f;
 
-	aid_src.innovation[0] = pred_flow_x - vel_from_flow_x;
-	aid_src.innovation[1] = pred_flow_y - vel_from_flow_y;
+	aid_src.innovation[0] = vel_from_flow_x - pred_flow_x;
+	aid_src.innovation[1] = vel_from_flow_y - pred_flow_y;
 	aid_src.innovation[2] = 0.f;
 
 	aid_src.fused = _fused_flow_x || _fused_flow_y;
