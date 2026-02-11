@@ -264,7 +264,7 @@
 		_sensor_z_in_body = _R_sensor_to_body.col(2);  // Sensor Z axis (viewing direction) in body frame
 
 		_h_flow_x = _sensor_y_in_body.normalized();
-		_h_flow_y = _sensor_x_in_body.normalized();
+		_h_flow_y = (-_sensor_x_in_body).normalized();
 	}
 
 	uint8_t getMinQualityThreshold() const
