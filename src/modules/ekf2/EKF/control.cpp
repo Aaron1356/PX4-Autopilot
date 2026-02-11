@@ -143,7 +143,6 @@ void Ekf::controlFusionModes(const imuSample &imu_delayed)
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
-	// _optical_flow_velocity->update(*this, imu_delayed);
 	for (auto& flow_instance: _flow_instances){
 		if(flow_instance != nullptr){
 			flow_instance->update(*this, imu_delayed);

@@ -59,7 +59,9 @@ bool Ekf::init(uint64_t timestamp)
 				_flow_instances[i] = OpticalFlowVelocity::create_instance(i);
 				if(_flow_instances[i] != nullptr) {
 					printf("Created optical flow instance %d\n", i);
+					active_flow++;
 				}
+
 			}
 		}
 		flow_instances_created = true;
@@ -191,19 +193,6 @@ bool Ekf::update()
 
 	return false;
 }
-
-// #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY) && defined(MODULE_NAME)
-// void Ekf::create_flow_instances(int num){
-// 	printf("Flow Instance: %d", num);
-
-	// Dynamically Create Optical Flow Instances
-
-	// flow_instances[0] = new OpticalFlowVelocity(0);
-	// for(int i=0; i < num; i++){
-	// 	flow_instances[i] = new OpticalFlowVelocity(i);
-	// }
-// }
-// #endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 bool Ekf::initialiseFilter()
 {

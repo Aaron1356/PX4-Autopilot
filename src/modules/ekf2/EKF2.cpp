@@ -217,7 +217,7 @@ EKF2::EKF2(bool multi_mode, const px4::wq_config_t &config, bool replay_mode):
 	_param_ekf2_gyr_b_lim(_params->gyro_bias_lim)
 {
 	AdvertiseTopics();
-	_params->flow_num_instances= _param_ekf2_of_int.get();
+	_params->flow_num_instances = _param_ekf2_of_int.get();
 }
 
 EKF2::~EKF2()
