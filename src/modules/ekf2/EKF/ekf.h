@@ -1153,6 +1153,33 @@ private:
 	// Allocating Space for the Optical Flow Instances.
 	OpticalFlowVelocity *_flow_instances[10]{};
 
+	bool isOpticalFlowVelocityHealthy() const {
+        int healthy_count = 0;
+        int active_count = 0;
+
+        for (const auto& flow_instance : _flow_instances) {
+            if (flow_instance != nullptr) {
+                if (flow_instance->isHealthy()) {
+                    healthy_count++;
+                }
+                active_count++;
+            }
+        }
+
+        // Require at least half of active sensors to be healthy
+        return (active_count > 0) && (healthy_count >= (active_count + 1) / 2);
+    }
+
+    int getHealthyOpticalFlowVelocityCount() const {
+        int count = 0;
+        for (const auto& flow_instance : _flow_instances) {
+            if (flow_instance != nullptr && flow_instance->isHealthy()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
 #endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 };
 

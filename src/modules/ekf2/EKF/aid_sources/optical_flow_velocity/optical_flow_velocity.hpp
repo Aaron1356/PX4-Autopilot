@@ -306,6 +306,10 @@
 		return base_var * quality_scale * range_scale;
 	}
 
+	bool isHealthy() const { return _healthy; }
+    float getTestRatioFiltered() const { return _test_ratio_lpf.getState(); }
+    float getFusionRate() const { return _fusion_rate_lpf.getState(); }
+
 	const matrix::Vector2f &test_ratio() const { return _vel_ne_test_ratio; }
 	const matrix::Vector2f &innovation() const { return _vel_ne_innovation; }
 
@@ -401,6 +405,20 @@
 
 	bool _fused_flow_x{false};
 	bool _fused_flow_y{false};
+
+	static constexpr float kHealthTimeConstant = 1.0f;  // 1 second filter
+    static constexpr float kMaxTestRatioThreshold = 1.0f;  // Innovation gate threshold
+    static constexpr float kMinFusionRateThreshold = 0.5f;  // Minimum 50% fusion rate
+    static constexpr uint64_t kHealthTimeoutUs = 2000000;   // 2 seconds without good fusion
+
+    AlphaFilter<float> _test_ratio_lpf{0.01f, kHealthTimeConstant};
+    AlphaFilter<float> _fusion_rate_lpf{0.01f, kHealthTimeConstant};
+
+    uint64_t _time_last_good_fusion{0};
+    uint32_t _fusion_attempt_count{0};
+    uint32_t _fusion_success_count{0};
+
+    bool _healthy{false};
 
 #if defined(MODULE_NAME)
 	struct reset_counters_s {

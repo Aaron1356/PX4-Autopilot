@@ -499,17 +499,30 @@ protected:
         // Adjusting the control Status values
 	bool _cs_optical_flow_status[10] {false};
 	void enableControlStatusOpticalFlowVelocity(int num) {
-                _cs_optical_flow_status[num] = true;
-                _control_status.flags.optical_flow_velocity = true;
+			_cs_optical_flow_status[num] = true;
+			_control_status.flags.optical_flow_velocity = true;
         }
 
-        void disableControlStatusOpticalFlowVelocity(int num) {
-                bool status = false;
-                for(int i = 0; i< 10; i++){
-                        status = status || _cs_optical_flow_status[i];
-                }
-                _control_status.flags.optical_flow_velocity = status;
+    void disableControlStatusOpticalFlowVelocity(int num) {
+			bool status = false;
+			// double counter = 0.0;
+			_cs_optical_flow_status[num] = false;
+			for(int i = 0; i< 10; i++){
+				status = status || _cs_optical_flow_status[i];
+				// if(_cs_optical_flow_status[i]){
+				// 	counter++;
+				// }
+			}
+			// if(counter > (double)(active_flow/2)){
+			// 	_control_status.flags.optical_flow_velocity = true;
+			// }
+			// else{
+			// 	_control_status.flags.optical_flow_velocity = false;
+			// }
+			_control_status.flags.optical_flow_velocity = status;
         }
+
+	uint8_t active_flow{0};
 #endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
 
 	void printBufferAllocationFailed(const char *buffer_name);
