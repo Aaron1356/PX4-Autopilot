@@ -193,47 +193,47 @@
 		_fused_flow_x = false;
 		_fused_flow_y = false;
 
-		 _fusion_attempt_count++;
+		//  _fusion_attempt_count++;
 
-        if (_fused_flow_x || _fused_flow_y) {
-            _fusion_success_count++;
+        // if (_fused_flow_x || _fused_flow_y) {
+        //     _fusion_success_count++;
 
-            // Compute combined test ratio
-            float test_ratio_x = (obs_var > 0) ? sq(aid_src.innovation[0]) / (sq(_ekf2_of_gate) * obs_var) : 0.f;
-            float test_ratio_y = (obs_var > 0) ? sq(aid_src.innovation[1]) / (sq(_ekf2_of_gate) * obs_var) : 0.f;
-            float max_test_ratio = math::max(test_ratio_x, test_ratio_y);
+        //     // Compute combined test ratio
+        //     float test_ratio_x = (obs_var > 0) ? sq(aid_src.innovation[0]) / (sq(_ekf2_of_gate) * obs_var) : 0.f;
+        //     float test_ratio_y = (obs_var > 0) ? sq(aid_src.innovation[1]) / (sq(_ekf2_of_gate) * obs_var) : 0.f;
+        //     float max_test_ratio = math::max(test_ratio_x, test_ratio_y);
 
-            _test_ratio_lpf.update(max_test_ratio);
+        //     _test_ratio_lpf.update(max_test_ratio);
 
-            if (max_test_ratio < kMaxTestRatioThreshold) {
-                _time_last_good_fusion = imu_delayed.time_us;
-            }
-        }
+        //     if (max_test_ratio < kMaxTestRatioThreshold) {
+        //         _time_last_good_fusion = imu_delayed.time_us;
+        //     }
+        // }
 
-        // Update fusion rate estimate (every ~100 samples)
-        if (_fusion_attempt_count >= 100) {
-            float rate = (float)_fusion_success_count / (float)_fusion_attempt_count;
-            _fusion_rate_lpf.update(rate);
-            _fusion_attempt_count = 0;
-            _fusion_success_count = 0;
-        }
+        // // Update fusion rate estimate (every ~100 samples)
+        // if (_fusion_attempt_count >= 100) {
+        //     float rate = (float)_fusion_success_count / (float)_fusion_attempt_count;
+        //     _fusion_rate_lpf.update(rate);
+        //     _fusion_attempt_count = 0;
+        //     _fusion_success_count = 0;
+        // }
 
-        // Determine health status
-        bool innovations_ok = _test_ratio_lpf.getState() < kMaxTestRatioThreshold;
-        bool fusion_rate_ok = _fusion_rate_lpf.getState() > kMinFusionRateThreshold;
-        bool recent_good_fusion = (imu_delayed.time_us - _time_last_good_fusion) < kHealthTimeoutUs;
+        // // Determine health status
+        // bool innovations_ok = _test_ratio_lpf.getState() < kMaxTestRatioThreshold;
+        // bool fusion_rate_ok = _fusion_rate_lpf.getState() > kMinFusionRateThreshold;
+        // bool recent_good_fusion = (imu_delayed.time_us - _time_last_good_fusion) < kHealthTimeoutUs;
 
-        _healthy = innovations_ok && fusion_rate_ok && recent_good_fusion;
+        // _healthy = innovations_ok && fusion_rate_ok && recent_good_fusion;
 
-        // If unhealthy, disable this sensor's contribution
-        if (!_healthy && _state == State::active) {
-            ECL_WARN("OpticalFlowVelocity %d unhealthy: test_ratio=%.2f, fusion_rate=%.2f",
-                     kFlowInstance,
-                     (double)_test_ratio_lpf.getState(),
-                     (double)_fusion_rate_lpf.getState());
-            ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
-            _state = State::stopped;
-        }
+        // // If unhealthy, disable this sensor's contribution
+        // if (!_healthy && _state == State::active) {
+        //     ECL_WARN("OpticalFlowVelocity %d unhealthy: test_ratio=%.2f, fusion_rate=%.2f",
+        //              kFlowInstance,
+        //              (double)_test_ratio_lpf.getState(),
+        //              (double)_fusion_rate_lpf.getState());
+        //     ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
+        //     _state = State::stopped;
+        // }
 
 		// State machine to manage the optical flow fusion
 		switch (_state) {
