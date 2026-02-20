@@ -496,35 +496,40 @@ protected:
 #endif // CONFIG_EKF2_DRAG_FUSION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
-        // Adjusting the control Status values
+	// Adjusting the control Status values
 	bool _cs_optical_flow_status[10] {false};
+	bool _optical_flow_vel_vert_active{false};
+
 	void enableControlStatusOpticalFlowVelocity(int num) {
-			_cs_optical_flow_status[num] = true;
-			checkControlStatusOptFlowVel();
-        }
+		_cs_optical_flow_status[num] = true;
+		checkControlStatusOptFlowVel();
+	}
 
-    void disableControlStatusOpticalFlowVelocity(int num) {
-			_cs_optical_flow_status[num] = false;
-			checkControlStatusOptFlowVel();
-        }
+	void disableControlStatusOpticalFlowVelocity(int num) {
+		_cs_optical_flow_status[num] = false;
+		checkControlStatusOptFlowVel();
+	}
 
-	void checkControlStatusOptFlowVel(){
-		uint counter = 0;
-		for (int i =0; i < 10; i++){
-			if(_cs_optical_flow_status[i]){
+	void checkControlStatusOptFlowVel() {
+		uint8_t counter = 0;
+		for (int i = 0; i < 10; i++) {
+			if (_cs_optical_flow_status[i]) {
 				counter++;
 			}
 		}
-		if(counter > (active_flow/2)){
-			_control_status.flags.optical_flow_velocity = true;
-		} else {
-			_control_status.flags.optical_flow_velocity = false;
-		}
 
+		// Horizontal: majority vote with ceiling division
+		// 1 sensor: need 1, 2 sensors: need 1, 3: need 2, 4: need 2
+		const uint8_t threshold_h = ((active_flow + 1u) / 2u ) + 1u;
+		_control_status.flags.optical_flow_velocity = (counter >= threshold_h);
+
+		// Vertical: just need any 1 sensor fusing
+		_optical_flow_vel_vert_active = (counter >= 2u);
+		ECL_INFO("Counter: %d", counter);
 	}
 
 	uint8_t active_flow{0};
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 	void printBufferAllocationFailed(const char *buffer_name);
 
