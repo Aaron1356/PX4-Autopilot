@@ -59,7 +59,6 @@ bool Ekf::init(uint64_t timestamp)
 				_flow_instances[i] = OpticalFlowVelocity::create_instance(i);
 				if(_flow_instances[i] != nullptr) {
 					printf("Created optical flow instance %d\n", i);
-					active_flow++;
 				}
 
 			}

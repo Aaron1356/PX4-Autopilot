@@ -497,78 +497,48 @@ protected:
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
     // Adjusting the control Status values
-	bool _fuse_vertical[10] {false};
+	bool _cs_optical_flow_vert[10] {false};
 	bool _cs_optical_flow_status[10] {false};
+	bool _cs_optical_flow_proven_h[10] {false};
 	bool _optical_flow_vel_vert_active{false};
 
-	void enableControlStatusOpticalFlowVelocity_h(int num) {
+	void enableControlStatusOpticalFlowVelocity(int num, bool hasVert) {
 		_cs_optical_flow_status[num] = true;
-		checkControlStatusOptFlowVel();
-	}
-	void enableControlStatusOpticalFlowVelocity_v(int num) {
-		_fuse_vertical[num] = false;
-		checkControlStatusOptFlowVel();
+        _cs_optical_flow_proven_h[num] = true;
+        _cs_optical_flow_vert[num] = hasVert;
+        // _cs_optical_flow_last_fuse_time[num] = _time_delayed_us;  // ← add this
+        checkControlStatusOptFlowVel();
 	}
 
-    void disableControlStatusOpticalFlowVelocity_h(int num) {
+    void disableControlStatusOpticalFlowVelocity(int num) {
 		_cs_optical_flow_status[num] = false;
 		checkControlStatusOptFlowVel();
 	}
 
-	void disableControlStatusOpticalFlowVelocity_v(int num) {
-		_fuse_vertical[num] = false;
-		checkControlStatusOptFlowVel();
+	uint64_t _cs_optical_flow_last_fuse_time[10] {};
+
+	void updateOpticalFlowFuseTime(uint8_t instance, uint64_t time_us) {
+		_cs_optical_flow_last_fuse_time[instance] = time_us;
 	}
 
 	void checkControlStatusOptFlowVel(){
-		uint h_counter = 0u;
-		uint v_counter = 0u;
+		const uint64_t now = _time_delayed_us;
+		const uint64_t FUSE_TIMEOUT = 1000000; // 1 second
 
-		for (int i =0; i < 10; i++){
-			if(_cs_optical_flow_status[i]){
-				h_counter++;
-			}
-			if(_fuse_vertical[i]){
-				v_counter++;
-			}
-		}
-		const uint8_t threshold = (active_flow + 1u) / 2u;
-
-		if (_control_status.flags.optical_flow_velocity) {
-			// Higher bar to turn OFF — require dropping well below threshold
-			if (h_counter < (threshold > 1u ? threshold - 1u: 1u )){
-				_control_status.flags.optical_flow_velocity = false;
-			}
-
-		} else {
-			// Normal threshold to turn ON
-			if (h_counter >= threshold) {
-				_control_status.flags.optical_flow_velocity = true;
+		uint8_t h_active = 0, h_proven = 0, v_active = 0;
+		for (int i = 0; i < 10; i++) {
+			if (_cs_optical_flow_proven_h[i]) h_proven++;
+			if (_cs_optical_flow_status[i]
+				&& (now - _cs_optical_flow_last_fuse_time[i] < FUSE_TIMEOUT)) {
+				h_active++;
+				if (_cs_optical_flow_vert[i]) v_active++;
 			}
 		}
-
-		if(_fuse_vertical){
-			if (v_counter <= 1u){
-				_optical_flow_vel_vert_active = false;
-			}
-
-		} else {
-			if(v_counter >= 2u){
-				_optical_flow_vel_vert_active = true;
-			}
-		}
-
-		// Horizontal: majority vote with ceiling division
-		// 1 sensor: need 1, 2 sensors: need 1, 3: need 2, 4: need 2
-		const uint8_t threshold_h = ((active_flow + 1u) / 2u ) + 1u;
-		_control_status.flags.optical_flow_velocity = (counter >= threshold_h);
-
-		// Vertical: just need any 1 sensor fusing
-		_optical_flow_vel_vert_active = (counter >= 2u);
-		ECL_INFO("Counter: %d", counter);
+		const uint8_t h_threshold = (h_proven > 0u) ? ((h_proven + 2u) / 2u) : 1u;
+		_control_status.flags.optical_flow_velocity = (h_active >= h_threshold);
+		_optical_flow_vel_vert_active = (v_active >= 2u);
 	}
 
-	uint8_t active_flow{0};
 #endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 	void printBufferAllocationFailed(const char *buffer_name);

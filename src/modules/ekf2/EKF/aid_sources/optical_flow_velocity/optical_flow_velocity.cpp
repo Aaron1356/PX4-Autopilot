@@ -193,47 +193,6 @@
 		_fused_flow_x = false;
 		_fused_flow_y = false;
 
-		//  _fusion_attempt_count++;
-
-        // if (_fused_flow_x || _fused_flow_y) {
-        //     _fusion_success_count++;
-
-        //     // Compute combined test ratio
-        //     float test_ratio_x = (obs_var > 0) ? sq(aid_src.innovation[0]) / (sq(_ekf2_of_gate) * obs_var) : 0.f;
-        //     float test_ratio_y = (obs_var > 0) ? sq(aid_src.innovation[1]) / (sq(_ekf2_of_gate) * obs_var) : 0.f;
-        //     float max_test_ratio = math::max(test_ratio_x, test_ratio_y);
-
-        //     _test_ratio_lpf.update(max_test_ratio);
-
-        //     if (max_test_ratio < kMaxTestRatioThreshold) {
-        //         _time_last_good_fusion = imu_delayed.time_us;
-        //     }
-        // }
-
-        // // Update fusion rate estimate (every ~100 samples)
-        // if (_fusion_attempt_count >= 100) {
-        //     float rate = (float)_fusion_success_count / (float)_fusion_attempt_count;
-        //     _fusion_rate_lpf.update(rate);
-        //     _fusion_attempt_count = 0;
-        //     _fusion_success_count = 0;
-        // }
-
-        // // Determine health status
-        // bool innovations_ok = _test_ratio_lpf.getState() < kMaxTestRatioThreshold;
-        // bool fusion_rate_ok = _fusion_rate_lpf.getState() > kMinFusionRateThreshold;
-        // bool recent_good_fusion = (imu_delayed.time_us - _time_last_good_fusion) < kHealthTimeoutUs;
-
-        // _healthy = innovations_ok && fusion_rate_ok && recent_good_fusion;
-
-        // // If unhealthy, disable this sensor's contribution
-        // if (!_healthy && _state == State::active) {
-        //     ECL_WARN("OpticalFlowVelocity %d unhealthy: test_ratio=%.2f, fusion_rate=%.2f",
-        //              kFlowInstance,
-        //              (double)_test_ratio_lpf.getState(),
-        //              (double)_fusion_rate_lpf.getState());
-        //     ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
-        //     _state = State::stopped;
-        // }
 
 		// State machine to manage the optical flow fusion
 		switch (_state) {
@@ -247,7 +206,9 @@
 			_fused_flow_y = fuseScalarVelocity(ekf, _h_flow_y, vel_from_flow_y, obs_var, imu_delayed.time_us);
 
 			if (_fused_flow_x || _fused_flow_y) {
-				ekf.enableControlStatusOpticalFlowVelocity_h(kFlowInstance);
+				ekf.updateOpticalFlowFuseTime(kFlowInstance, imu_delayed.time_us);
+				bool contributes_vertical = (fabsf(_h_flow_x(2)) > 0.3f || fabsf(_h_flow_y(2)) > 0.3f);
+				ekf.enableControlStatusOpticalFlowVelocity(kFlowInstance, contributes_vertical);
 				_state = State::active;
 			}
 	    }
@@ -255,44 +216,34 @@
 
 	case State::active:
     	if (continuing_conditions) {
+			const bool h_quorum = ekf.control_status_flags().optical_flow_velocity;
+			const bool v_quorum = ekf._optical_flow_vel_vert_active;
+			const bool has_vert = (fabsf(_h_flow_x(2)) > 0.3f || fabsf(_h_flow_y(2)) > 0.3f);
+
+			if (!h_quorum && !(v_quorum && has_vert)) {
+				ekf.updateOpticalFlowFuseTime(kFlowInstance, imu_delayed.time_us);
+				break;
+			}
     	    _fused_flow_x = fuseScalarVelocity(ekf, _h_flow_x, vel_from_flow_x, obs_var, sample.flow_quality);
     	    _fused_flow_y = fuseScalarVelocity(ekf, _h_flow_y, vel_from_flow_y, obs_var, sample.flow_quality);
 
     	    if (_fused_flow_x || _fused_flow_y){
-				if(ekf.control_status_flags().optical_flow_velocity) {
+				ekf.updateOpticalFlowFuseTime(kFlowInstance, imu_delayed.time_us);
+				if(h_quorum) {
 					ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
 					ekf._time_last_horizontal_aiding = imu_delayed.time_us;
 				}
 
 				// Check if this sensor contributes to vertical velocity
-				if ((fabsf(_h_flow_x(2)) > 0.3f || fabsf(_h_flow_y(2)) > 0.3f)
-					&& ekf._optical_flow_vel_vert_active) {
+				if (has_vert && v_quorum) {
 					ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
 					ekf._time_last_v_vel_aiding = imu_delayed.time_us;
-					ekf.enableControlStatusOpticalFlowVelocity_v(kFlowInstance);
-				} else{
-					ekf.disableControlStatusOpticalFlowVelocity_v(kFlowInstance);
 				}
-    	    if (_fused_flow_x || _fused_flow_y) {
-		// Horizontal: only update timestamps when majority vote passes
-		if (ekf.control_status_flags().optical_flow_velocity) {
-			ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
-			ekf._time_last_horizontal_aiding = imu_delayed.time_us;
-		}
-
-		// Vertical: independent, lower threshold — not gated on horizontal vote
-		if ((fabsf(_h_flow_x(2)) > 0.3f || fabsf(_h_flow_y(2)) > 0.3f)
-			&& ekf._optical_flow_vel_vert_active) {
-			ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
-			ekf._time_last_v_vel_aiding = imu_delayed.time_us;
-		}
-    	    }
     	    // Stay in active state - DO NOT disable here!
-
+			ekf.checkControlStatusOptFlowVel();
+			}
     	} else {
-    	    // Conditions no longer met - now we can disable
-    	    ekf.disableControlStatusOpticalFlowVelocity_h(kFlowInstance);
-			ekf.disableControlStatusOpticalFlowVelocity_v(kFlowInstance);
+    	    ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
     	    _state = State::stopped;
     	}
     	break;
@@ -390,8 +341,7 @@
  #endif // MODULE_NAME
 
     } else if ((_state != State::stopped) && isTimedOut(_time_last_buffer_push, imu_delayed.time_us, (uint64_t)5e6)) {
-		ekf.disableControlStatusOpticalFlowVelocity_h(kFlowInstance);
-		ekf.disableControlStatusOpticalFlowVelocity_v(kFlowInstance);
+		ekf.disableControlStatusOpticalFlowVelocity(kFlowInstance);
 		_state = State::stopped;
 		ECL_WARN("Optical flow velocity instance %d data stopped", kFlowInstance);
     }
