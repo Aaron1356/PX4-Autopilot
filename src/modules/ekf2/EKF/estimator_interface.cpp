@@ -676,7 +676,7 @@ int EstimatorInterface::getNumberOfActiveVerticalVelocityAidingSources() const
 {
 	return int(_control_status.flags.gnss_vel)
 	       + int(_control_status.flags.ev_vel)
-	       + int(_control_status.flags.optical_flow_velocity);
+	       + int(_optical_flow_vel_vert_active);
 }
 
 bool EstimatorInterface::isNorthEastAidingActive() const

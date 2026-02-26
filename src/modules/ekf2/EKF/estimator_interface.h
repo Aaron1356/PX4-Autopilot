@@ -496,29 +496,66 @@ protected:
 #endif // CONFIG_EKF2_DRAG_FUSION
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
-        // Adjusting the control Status values
+    // Adjusting the control Status values
+	bool _fuse_vertical[10] {false};
 	bool _cs_optical_flow_status[10] {false};
-	void enableControlStatusOpticalFlowVelocity(int num) {
-			_cs_optical_flow_status[num] = true;
-			checkControlStatusOptFlowVel();
-        }
+	bool _optical_flow_vel_vert_active{false};
 
-    void disableControlStatusOpticalFlowVelocity(int num) {
-			_cs_optical_flow_status[num] = false;
-			checkControlStatusOptFlowVel();
-        }
+	void enableControlStatusOpticalFlowVelocity_h(int num) {
+		_cs_optical_flow_status[num] = true;
+		checkControlStatusOptFlowVel();
+	}
+	void enableControlStatusOpticalFlowVelocity_v(int num) {
+		_fuse_vertical[num] = false;
+		checkControlStatusOptFlowVel();
+	}
+
+    void disableControlStatusOpticalFlowVelocity_h(int num) {
+		_cs_optical_flow_status[num] = false;
+		checkControlStatusOptFlowVel();
+	}
+
+	void disableControlStatusOpticalFlowVelocity_v(int num) {
+		_fuse_vertical[num] = false;
+		checkControlStatusOptFlowVel();
+	}
 
 	void checkControlStatusOptFlowVel(){
-		uint counter = 0;
+		uint h_counter = 0u;
+		uint v_counter = 0u;
+
 		for (int i =0; i < 10; i++){
 			if(_cs_optical_flow_status[i]){
-				counter++;
+				h_counter++;
+			}
+			if(_fuse_vertical[i]){
+				v_counter++;
 			}
 		}
-		if(counter > (active_flow/2)){
-			_control_status.flags.optical_flow_velocity = true;
+		const uint8_t threshold = (active_flow + 1u) / 2u;
+
+		if (_control_status.flags.optical_flow_velocity) {
+			// Higher bar to turn OFF — require dropping well below threshold
+			if (h_counter < (threshold > 1u ? threshold - 1u: 1u )){
+				_control_status.flags.optical_flow_velocity = false;
+			}
+
 		} else {
-			_control_status.flags.optical_flow_velocity = false;
+			// Normal threshold to turn ON
+			if (h_counter >= threshold) {
+				_control_status.flags.optical_flow_velocity = true;
+			}
+		}
+
+		if(_fuse_vertical){
+			if (v_counter <= 1u){
+				_optical_flow_vel_vert_active = false;
+			}
+
+		} else {
+			if(v_counter >= 2u){
+				_optical_flow_vel_vert_active = true;
+			}
 		}
 
 	}
