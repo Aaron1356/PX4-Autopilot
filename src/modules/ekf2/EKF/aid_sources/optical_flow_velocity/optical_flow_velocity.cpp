@@ -273,6 +273,19 @@
 				} else{
 					ekf.disableControlStatusOpticalFlowVelocity_v(kFlowInstance);
 				}
+    	    if (_fused_flow_x || _fused_flow_y) {
+		// Horizontal: only update timestamps when majority vote passes
+		if (ekf.control_status_flags().optical_flow_velocity) {
+			ekf._time_last_hor_vel_fuse = imu_delayed.time_us;
+			ekf._time_last_horizontal_aiding = imu_delayed.time_us;
+		}
+
+		// Vertical: independent, lower threshold — not gated on horizontal vote
+		if ((fabsf(_h_flow_x(2)) > 0.3f || fabsf(_h_flow_y(2)) > 0.3f)
+			&& ekf._optical_flow_vel_vert_active) {
+			ekf._time_last_ver_vel_fuse = imu_delayed.time_us;
+			ekf._time_last_v_vel_aiding = imu_delayed.time_us;
+		}
     	    }
     	    // Stay in active state - DO NOT disable here!
 

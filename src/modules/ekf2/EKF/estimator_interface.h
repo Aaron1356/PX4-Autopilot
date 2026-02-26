@@ -558,10 +558,18 @@ protected:
 			}
 		}
 
+		// Horizontal: majority vote with ceiling division
+		// 1 sensor: need 1, 2 sensors: need 1, 3: need 2, 4: need 2
+		const uint8_t threshold_h = ((active_flow + 1u) / 2u ) + 1u;
+		_control_status.flags.optical_flow_velocity = (counter >= threshold_h);
+
+		// Vertical: just need any 1 sensor fusing
+		_optical_flow_vel_vert_active = (counter >= 2u);
+		ECL_INFO("Counter: %d", counter);
 	}
 
 	uint8_t active_flow{0};
-#endif // CONFIG_EKF2_OPTICAL_FLOW_BASE
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 
 	void printBufferAllocationFailed(const char *buffer_name);
 

@@ -676,7 +676,11 @@ int EstimatorInterface::getNumberOfActiveVerticalVelocityAidingSources() const
 {
 	return int(_control_status.flags.gnss_vel)
 	       + int(_control_status.flags.ev_vel)
+#if defined(CONFIG_EKF2_OPTICAL_FLOW_VELOCITY)
 	       + int(_optical_flow_vel_vert_active);
+#else
+	       + int(_control_status.flags.optical_flow_velocity);
+#endif // CONFIG_EKF2_OPTICAL_FLOW_VELOCITY
 }
 
 bool EstimatorInterface::isNorthEastAidingActive() const
